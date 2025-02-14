@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -37,8 +38,11 @@ public class FlashCardSetService {
         return ResponseEntity.status(HttpStatus.CREATED).body("Set Created");
     }
 
-    public List<FlashcardSet> getAllFlashcardSets() {
-        return flashcardSetRepository.findAll();
+    public List<FlashCardSetDTO> getAllFlashcardSetsDTO() {
+        List<FlashcardSet> flashcardSets = flashcardSetRepository.findAll();
+        return flashcardSets.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
     public FlashcardSet getFlashcardSetById(Long id) {
@@ -54,5 +58,13 @@ public class FlashCardSetService {
                 .orElseThrow(() -> new RuntimeException("Flashcard Set not found"));
         existingFlashcardSet.setName(flashcardSet.getName());
         return flashcardSetRepository.save(existingFlashcardSet);
+    }
+
+    public FlashCardSetDTO convertToDTO(FlashcardSet flashcardSet) {
+        FlashCardSetDTO dto = new FlashCardSetDTO();
+        dto.setId(flashcardSet.getId());
+        dto.setName(flashcardSet.getName());
+        dto.setPublic(flashcardSet.isPublic());
+        return dto;
     }
 }

@@ -2,6 +2,7 @@ package online.muydinov.quizletclone.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.List;
 import java.util.Set;
@@ -18,10 +19,11 @@ public class FlashcardSet {
 
     private String name;
 
-    @OneToMany(mappedBy = "flashcardSet", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "flashcardSet", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<FlashCard> flashCards;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "creator_id", nullable = false)
     private User creator;
 

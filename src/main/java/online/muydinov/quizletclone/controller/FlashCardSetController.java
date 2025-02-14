@@ -9,6 +9,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/flashcardsets")
@@ -16,6 +17,7 @@ import java.util.List;
 public class FlashCardSetController {
 
     private final FlashCardSetService flashcardSetService;
+    FlashCardSetDTO flashCardSetDTO;
 
     @PostMapping
     public ResponseEntity<String> createFlashcardSet(@RequestBody FlashCardSetDTO flashcardSetDTO) {
@@ -24,9 +26,10 @@ public class FlashCardSetController {
 
     @GetMapping
     @PreAuthorize("hasRole('USER')")
-    public List<FlashcardSet> getAllFlashcardSets() {
-        return flashcardSetService.getAllFlashcardSets();
+    public List<FlashCardSetDTO> getAllFlashcardSets() {
+        return flashcardSetService.getAllFlashcardSetsDTO();
     }
+
 
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('USER')")
