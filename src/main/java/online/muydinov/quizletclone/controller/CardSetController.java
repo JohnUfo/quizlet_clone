@@ -6,7 +6,6 @@ import online.muydinov.quizletclone.entity.CardSet;
 import online.muydinov.quizletclone.service.CardSetService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,14 +24,12 @@ public class CardSetController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<CardSetDTO>> getAllCardSets() {
         List<CardSetDTO> cardSets = cardSetService.getAllCardSetsDTO();
         return ResponseEntity.ok(cardSets);
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<CardSetDTO> getCardSetById(@PathVariable Long id) {
         CardSet cardSet = cardSetService.getCardSetById(id);
         CardSetDTO dto = cardSetService.convertToDTO(cardSet);
@@ -40,14 +37,12 @@ public class CardSetController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<String> deleteCardSet(@PathVariable Long id) {
         cardSetService.deleteCardSet(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Card Set Deleted");
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<CardSetDTO> updateCardSet(@PathVariable Long id, @RequestBody CardSetDTO cardSetDTO) {
         CardSet updatedCardSet = cardSetService.updateCardSet(id, cardSetDTO);
         CardSetDTO dto = cardSetService.convertToDTO(updatedCardSet);

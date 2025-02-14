@@ -2,6 +2,7 @@ package online.muydinov.quizletclone.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import online.muydinov.quizletclone.enums.RequestStatus;
 
 @Data
 @AllArgsConstructor
@@ -24,7 +25,4 @@ public class SetAccessRequest {
     @Enumerated(EnumType.STRING)
     private RequestStatus status;
 
-    public enum RequestStatus {
-        PENDING, APPROVED, REJECTED
-    }
 }

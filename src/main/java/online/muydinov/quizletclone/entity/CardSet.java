@@ -1,8 +1,11 @@
 package online.muydinov.quizletclone.entity;
 
-import jakarta.persistence.*;
-import lombok.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import online.muydinov.quizletclone.enums.Language;
 
 import java.util.List;
 import java.util.Set;
@@ -36,4 +39,10 @@ public class CardSet {
     private Set<User> approvedUsers;
 
     private boolean isPublic;
+
+    @Enumerated(EnumType.STRING)
+    private Language firstLanguage;
+
+    @Enumerated(EnumType.STRING)
+    private Language secondLanguage;
 }

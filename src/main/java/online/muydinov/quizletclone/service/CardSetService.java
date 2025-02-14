@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import online.muydinov.quizletclone.dto.CardSetDTO;
 import online.muydinov.quizletclone.entity.CardSet;
 import online.muydinov.quizletclone.entity.User;
+import online.muydinov.quizletclone.enums.Language;
 import online.muydinov.quizletclone.exceptions.CardSetAlreadyExistsException;
 import online.muydinov.quizletclone.exceptions.CardSetNotFoundException;
 import online.muydinov.quizletclone.repository.CardSetRepository;
@@ -38,6 +39,8 @@ public class CardSetService {
         cardSet.setName(cardSetDTO.getName());
         cardSet.setPublic(cardSetDTO.isPublic());
         cardSet.setCreator(creator);
+        cardSet.setFirstLanguage(Language.valueOf(cardSetDTO.getFirstLanguage()));
+        cardSet.setSecondLanguage(Language.valueOf(cardSetDTO.getSecondLanguage()));
 
         cardSetRepository.save(cardSet);
     }
@@ -67,6 +70,8 @@ public class CardSetService {
 
         existingCardSet.setName(cardSetDTO.getName());
         existingCardSet.setPublic(cardSetDTO.isPublic());
+        existingCardSet.setFirstLanguage(Language.valueOf(cardSetDTO.getFirstLanguage()));
+        existingCardSet.setSecondLanguage(Language.valueOf(cardSetDTO.getSecondLanguage()));
 
         return cardSetRepository.save(existingCardSet);
     }
@@ -76,6 +81,8 @@ public class CardSetService {
         dto.setId(cardSet.getId());
         dto.setName(cardSet.getName());
         dto.setPublic(cardSet.isPublic());
+        dto.setFirstLanguage(String.valueOf(cardSet.getFirstLanguage()));
+        dto.setSecondLanguage(String.valueOf(cardSet.getSecondLanguage()));
         return dto;
     }
 }
