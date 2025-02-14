@@ -19,7 +19,7 @@ public class SetAccessRequest {
 
     @ManyToOne
     @JoinColumn(name = "set_id", nullable = false)
-    private FlashcardSet flashcardSet;
+    private CardSet cardSet;
 
     @Enumerated(EnumType.STRING)
     private RequestStatus status;

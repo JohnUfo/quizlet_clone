@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class FlashCardSetDTO {
+public class CardSetDTO {
     private Long id;
     private String name;
     private boolean isPublic;

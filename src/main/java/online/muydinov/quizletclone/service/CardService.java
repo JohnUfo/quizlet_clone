@@ -1,5 +1,5 @@
 package online.muydinov.quizletclone.service;
 
-public class FlashCardService {
+public class CardService {
 
 }

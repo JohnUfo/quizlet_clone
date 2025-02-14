@@ -17,14 +17,14 @@ public class User {
     private Long id;
 
     private String fullName;
-    @Column(unique = true,nullable = false)
+    @Column(unique = true, nullable = false)
     private String username;
     @Column(nullable = false)
     private String password;
 
     @OneToMany(mappedBy = "creator", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<FlashcardSet> createdSets;
+    private List<CardSet> createdSets;
 
     @ManyToMany(mappedBy = "approvedUsers")
-    private Set<FlashcardSet> accessibleSets;
+    private Set<CardSet> accessibleSets;
 }

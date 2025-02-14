@@ -7,18 +7,18 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-public class FlashCard {
+public class Card {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String firstFlash;
-    private String secondFlash;
+    private String firstCard;
+    private String secondCard;
 
     @ManyToOne
     @JoinColumn(name = "set_id", nullable = false)
-    private FlashcardSet flashcardSet;
+    private CardSet cardSet;
 
     @ManyToOne
     @JoinColumn(name = "first_language_id", nullable = false)
