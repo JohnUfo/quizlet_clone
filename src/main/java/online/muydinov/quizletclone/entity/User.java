@@ -17,7 +17,9 @@ public class User {
     private Long id;
 
     private String fullName;
+    @Column(unique = true,nullable = false)
     private String username;
+    @Column(nullable = false)
     private String password;
 
     @OneToMany(mappedBy = "creator", cascade = CascadeType.ALL, orphanRemoval = true)
