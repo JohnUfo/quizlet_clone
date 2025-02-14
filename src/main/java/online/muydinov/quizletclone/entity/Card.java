@@ -1,12 +1,16 @@
 package online.muydinov.quizletclone.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Entity
 public class Card {
 
@@ -17,8 +21,8 @@ public class Card {
     private String firstCard;
     private String secondCard;
 
-    @ManyToOne(fetch = FetchType.LAZY)  // Use LAZY loading
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "set_id", nullable = false)
-    @JsonIgnore
+    @JsonBackReference
     private CardSet cardSet;
 }

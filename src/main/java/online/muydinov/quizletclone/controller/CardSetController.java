@@ -18,34 +18,29 @@ public class CardSetController {
     private final CardSetService cardSetService;
 
     @PostMapping
-    public ResponseEntity<String> createCardSet(@RequestBody CardSetDTO cardSetDTO) {
-        cardSetService.createCardSet(cardSetDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Card Set Created");
+    public ResponseEntity<CardSetDTO> createCardSet(@RequestBody CardSetDTO cardSetDTO) {
+        CardSet createdCardSet = cardSetService.createCardSet(cardSetDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(cardSetService.convertToDTO(createdCardSet));
     }
 
     @GetMapping
     public ResponseEntity<List<CardSetDTO>> getAllCardSets() {
-        List<CardSetDTO> cardSets = cardSetService.getAllCardSetsDTO();
-        return ResponseEntity.ok(cardSets);
+        return ResponseEntity.ok(cardSetService.getAllCardSetsDTO());
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<CardSetDTO> getCardSetById(@PathVariable Long id) {
-        CardSet cardSet = cardSetService.getCardSetById(id);
-        CardSetDTO dto = cardSetService.convertToDTO(cardSet);
-        return ResponseEntity.ok(dto);
+    @GetMapping("/{cardSetId}")
+    public ResponseEntity<CardSetDTO> getCardSetById(@PathVariable Long cardSetId) {
+        return ResponseEntity.ok(cardSetService.getCardSetById(cardSetId));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteCardSet(@PathVariable Long id) {
-        cardSetService.deleteCardSet(id);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Card Set Deleted");
+    @DeleteMapping("/{cardSetId}")
+    public ResponseEntity<Void> deleteCardSet(@PathVariable Long cardSetId) {
+        cardSetService.deleteCardSet(cardSetId);
+        return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<CardSetDTO> updateCardSet(@PathVariable Long id, @RequestBody CardSetDTO cardSetDTO) {
-        CardSet updatedCardSet = cardSetService.updateCardSet(id, cardSetDTO);
-        CardSetDTO dto = cardSetService.convertToDTO(updatedCardSet);
-        return ResponseEntity.ok(dto);
+    @PutMapping("/{cardSetId}")
+    public ResponseEntity<CardSetDTO> updateCardSet(@PathVariable Long cardSetId, @RequestBody CardSetDTO cardSetDTO) {
+        return ResponseEntity.ok(cardSetService.updateCardSet(cardSetId, cardSetDTO));
     }
 }

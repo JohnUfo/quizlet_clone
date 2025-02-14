@@ -7,6 +7,7 @@ import online.muydinov.quizletclone.entity.User;
 import online.muydinov.quizletclone.enums.Language;
 import online.muydinov.quizletclone.exceptions.CardSetAlreadyExistsException;
 import online.muydinov.quizletclone.exceptions.CardSetNotFoundException;
+import online.muydinov.quizletclone.exceptions.UserNotFoundException;
 import online.muydinov.quizletclone.repository.CardSetRepository;
 import online.muydinov.quizletclone.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -22,18 +23,15 @@ public class CardSetService {
     private final MyUserDetailsService myUserDetailsService;
     private final CardSetRepository cardSetRepository;
 
-    public void createCardSet(CardSetDTO cardSetDTO) {
+    public CardSet createCardSet(CardSetDTO cardSetDTO) {
         boolean existsByName = cardSetRepository.existsByName(cardSetDTO.getName());
         if (existsByName) {
             throw new CardSetAlreadyExistsException("This Set already exists");
         }
 
         String username = myUserDetailsService.getUsername();
-        User creator = userRepository.findByUsername(username);
-
-        if (creator == null) {
-            throw new RuntimeException("Creator not found");
-        }
+        User creator = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("Creator not found"));
 
         CardSet cardSet = new CardSet();
         cardSet.setName(cardSetDTO.getName());
@@ -42,8 +40,10 @@ public class CardSetService {
         cardSet.setFirstLanguage(Language.valueOf(cardSetDTO.getFirstLanguage()));
         cardSet.setSecondLanguage(Language.valueOf(cardSetDTO.getSecondLanguage()));
 
-        cardSetRepository.save(cardSet);
+        return cardSetRepository.save(cardSet);
     }
+
+
 
     public List<CardSetDTO> getAllCardSetsDTO() {
         List<CardSet> cardSets = cardSetRepository.findAll();
@@ -52,10 +52,12 @@ public class CardSetService {
                 .collect(Collectors.toList());
     }
 
-    public CardSet getCardSetById(Long id) {
-        return cardSetRepository.findById(id)
+    public CardSetDTO getCardSetById(Long id) {
+        CardSet cardSet = cardSetRepository.findById(id)
                 .orElseThrow(() -> new CardSetNotFoundException("Card Set not found"));
+        return convertToDTO(cardSet);
     }
+
 
     public void deleteCardSet(Long id) {
         CardSet cardSet = cardSetRepository.findById(id)
@@ -64,25 +66,27 @@ public class CardSetService {
         cardSetRepository.delete(cardSet);
     }
 
-    public CardSet updateCardSet(Long id, CardSetDTO cardSetDTO) {
-        CardSet existingCardSet = cardSetRepository.findById(id)
+    public CardSetDTO updateCardSet(Long id, CardSetDTO cardSetDTO) {
+        return cardSetRepository.findById(id)
+                .map(existingCardSet -> {
+                    existingCardSet.setName(cardSetDTO.getName());
+                    existingCardSet.setPublic(cardSetDTO.isPublic());
+                    existingCardSet.setFirstLanguage(Language.valueOf(cardSetDTO.getFirstLanguage()));
+                    existingCardSet.setSecondLanguage(Language.valueOf(cardSetDTO.getSecondLanguage()));
+                    return convertToDTO(cardSetRepository.save(existingCardSet));
+                })
                 .orElseThrow(() -> new CardSetNotFoundException("Card Set not found"));
-
-        existingCardSet.setName(cardSetDTO.getName());
-        existingCardSet.setPublic(cardSetDTO.isPublic());
-        existingCardSet.setFirstLanguage(Language.valueOf(cardSetDTO.getFirstLanguage()));
-        existingCardSet.setSecondLanguage(Language.valueOf(cardSetDTO.getSecondLanguage()));
-
-        return cardSetRepository.save(existingCardSet);
     }
 
+
+
     public CardSetDTO convertToDTO(CardSet cardSet) {
-        CardSetDTO dto = new CardSetDTO();
-        dto.setId(cardSet.getId());
-        dto.setName(cardSet.getName());
-        dto.setPublic(cardSet.isPublic());
-        dto.setFirstLanguage(String.valueOf(cardSet.getFirstLanguage()));
-        dto.setSecondLanguage(String.valueOf(cardSet.getSecondLanguage()));
-        return dto;
+        return new CardSetDTO(
+                cardSet.getId(),
+                cardSet.getName(),
+                cardSet.isPublic(),
+                cardSet.getFirstLanguage().toString(),
+                cardSet.getSecondLanguage().toString()
+        );
     }
 }

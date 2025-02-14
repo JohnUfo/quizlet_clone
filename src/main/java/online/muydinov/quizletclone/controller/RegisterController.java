@@ -16,15 +16,13 @@ public class RegisterController {
 
     private final RegisterService registerService;
     private final UserService userService;
-    private final BCryptPasswordEncoder encoder;
 
     @PostMapping
     public ResponseEntity<String> register(@RequestBody User user) {
         if (userService.existsByUsername(user.getUsername())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("User already exists");
         }
-        user.setPassword(encoder.encode(user.getPassword()));
-        User registeredUser = registerService.register(user);
-        return ResponseEntity.status(HttpStatus.CREATED).body(registeredUser.toString());
+        registerService.register(user);
+        return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully");
     }
 }

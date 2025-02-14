@@ -1,8 +1,9 @@
 package online.muydinov.quizletclone.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import online.muydinov.quizletclone.enums.Language;
@@ -13,6 +14,7 @@ import java.util.Set;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Entity
 public class CardSet {
 
@@ -23,7 +25,7 @@ public class CardSet {
     private String name;
 
     @OneToMany(mappedBy = "cardSet", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @JsonIgnore
+    @JsonManagedReference
     private List<Card> cards;
 
     @ManyToOne(fetch = FetchType.LAZY)
