@@ -19,21 +19,26 @@ public class FlashCardSetService {
 
     private final UserRepository userRepository;
     private final MyUserDetailsService myUserDetailsService;
-
     private final FlashCardSetRepository flashcardSetRepository;
 
     public ResponseEntity<String> createFlashcardSet(FlashCardSetDTO flashCardSetDTO) {
         boolean existsByName = flashcardSetRepository.existsByName(flashCardSetDTO.getName());
         if (existsByName) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("This Set already exist");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("This Set already exists");
         }
+
         String username = myUserDetailsService.getUsername();
         User creator = userRepository.findByUsername(username);
+
+        if (creator == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Creator not found");
+        }
 
         FlashcardSet flashcardSet = new FlashcardSet();
         flashcardSet.setName(flashCardSetDTO.getName());
         flashcardSet.setPublic(flashCardSetDTO.isPublic());
         flashcardSet.setCreator(creator);
+
         flashcardSetRepository.save(flashcardSet);
         return ResponseEntity.status(HttpStatus.CREATED).body("Set Created");
     }
@@ -46,17 +51,25 @@ public class FlashCardSetService {
     }
 
     public FlashcardSet getFlashcardSetById(Long id) {
-        return flashcardSetRepository.findById(id).orElseThrow(() -> new RuntimeException("Flashcard Set not found"));
+        return flashcardSetRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Flashcard Set not found"));
     }
 
-    public void deleteFlashcardSet(Long id) {
-        flashcardSetRepository.deleteById(id);
+    public ResponseEntity<String> deleteFlashcardSet(Long id) {
+        FlashcardSet flashcardSet = flashcardSetRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Flashcard Set not found"));
+
+        flashcardSetRepository.delete(flashcardSet);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Set Deleted");
     }
 
-    public FlashcardSet updateFlashcardSet(Long id, FlashcardSet flashcardSet) {
+    public FlashcardSet updateFlashcardSet(Long id, FlashCardSetDTO flashCardSetDTO) {
         FlashcardSet existingFlashcardSet = flashcardSetRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Flashcard Set not found"));
-        existingFlashcardSet.setName(flashcardSet.getName());
+
+        existingFlashcardSet.setName(flashCardSetDTO.getName());
+        existingFlashcardSet.setPublic(flashCardSetDTO.isPublic());
+
         return flashcardSetRepository.save(existingFlashcardSet);
     }
 
