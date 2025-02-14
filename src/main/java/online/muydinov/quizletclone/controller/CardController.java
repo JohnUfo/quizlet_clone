@@ -23,23 +23,28 @@ public class CardController {
         return ResponseEntity.status(HttpStatus.CREATED).body("Card Created");
     }
 
-//    @GetMapping("/{cardId}")
-//    public ResponseEntity<CardDTO> getCardById(@PathVariable Long cardId) {
-//        Card cardSet = cardService.getCardById(cardId);
-//        CardDTO dto = cardService.convertToDTO(cardSet);
-//        return ResponseEntity.ok(dto);
-//    }
-//
-//    @DeleteMapping("/{id}")
-//    public ResponseEntity<String> deleteCard(@PathVariable Long id) {
-//        cardService.deleteCard(id);
-//        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Card Set Deleted");
-//    }
-//
-//    @PutMapping("/{id}")
-//    public ResponseEntity<CardDTO> updateCard(@PathVariable Long id, @RequestBody CardDTO cardDTO) {
-//        Card updatedCard = cardService.updateCard(id, cardDTO);
-//        CardDTO dto = cardService.convertToDTO(updatedCard);
-//        return ResponseEntity.ok(dto);
-//    }
+    @GetMapping("/allCards/{cardSetId}")
+    public ResponseEntity<List<Card>> getAllCardsByCardSetId(@PathVariable(name = "cardSetId") Long cardSetId) {
+        List<Card> card = cardService.getAllCardsByCardSetId(cardSetId);
+        return ResponseEntity.ok(card);
+    }
+
+    @GetMapping("/{cardId}")
+    public ResponseEntity<Card> getCardById(@PathVariable(name = "cardId") Long cardId) {
+        Card card = cardService.getCardById(cardId);
+        return ResponseEntity.ok(card);
+    }
+
+    @DeleteMapping("/{cardId}")
+    public ResponseEntity<String> deleteCard(@PathVariable(name = "cardId") Long cardId) {
+        cardService.deleteCardById(cardId);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Card Deleted");
+    }
+
+    @PutMapping("/{cardId}")
+    public ResponseEntity<Card> updateCard(@PathVariable(name = "cardId") Long cardId, @RequestBody CardDTO cardDTO) {
+        cardDTO.setId(cardId);
+        Card updatedCard = cardService.updateCard(cardDTO);
+        return ResponseEntity.ok(updatedCard);
+    }
 }
