@@ -4,6 +4,7 @@ import online.muydinov.quizletclone.entity.User;
 import online.muydinov.quizletclone.entity.UserPrincipal;
 import online.muydinov.quizletclone.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -25,5 +26,10 @@ public class MyUserDetailsService implements UserDetailsService {
         }
 
         return new UserPrincipal(user);
+    }
+
+    public String getUsername() {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return userDetails.getUsername();
     }
 }
