@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import online.muydinov.quizletclone.dto.CardDTO;
 import online.muydinov.quizletclone.entity.Card;
 import online.muydinov.quizletclone.entity.CardSet;
+import online.muydinov.quizletclone.exceptions.CardNotFoundException;
 import online.muydinov.quizletclone.exceptions.CardSetNotFoundException;
 import online.muydinov.quizletclone.repository.CardRepository;
 import online.muydinov.quizletclone.repository.CardSetRepository;
@@ -30,19 +31,19 @@ public class CardService {
 
     public Card getCardById(Long cardId) {
         return cardRepository.findById(cardId)
-                .orElseThrow(() -> new CardSetNotFoundException("Card not found"));
+                .orElseThrow(() -> new CardNotFoundException("Card not found"));
     }
 
     public void deleteCardById(Long cardId) {
         Card card = cardRepository.findById(cardId)
-                .orElseThrow(() -> new CardSetNotFoundException("Card not found"));
+                .orElseThrow(() -> new CardNotFoundException("Card not found"));
 
         cardRepository.delete(card);
     }
 
     public Card updateCard(CardDTO cardDTO) {
         Card existingCard = cardRepository.findById(cardDTO.getId())
-                .orElseThrow(() -> new CardSetNotFoundException("Card not found"));
+                .orElseThrow(() -> new CardNotFoundException("Card not found"));
 
         existingCard.setFirstCard(cardDTO.getFirstCard());
         existingCard.setSecondCard(cardDTO.getSecondCard());
