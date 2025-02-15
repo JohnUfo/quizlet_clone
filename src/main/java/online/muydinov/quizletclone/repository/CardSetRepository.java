@@ -11,4 +11,7 @@ public interface CardSetRepository extends JpaRepository<CardSet, Long> {
 
     @Query("SELECT c FROM CardSet c WHERE c.id = :setId AND c.creator.username = :username")
     Optional<CardSet> findByIdAndOwner(Long setId, String username);
+
+    @Query("SELECT c.creator.username from CardSet c WHERE c.id =:setId")
+    String findOwnerUsernameByCardSetId(Long setId);
 }

@@ -83,16 +83,13 @@ public class SetAccessRequestService {
 
     public List<SetAccessRequestDTO> getPendingRequests(Long setId) {
         String username = myUserDetailsService.getUsername();
-        Optional<String> ownerUsernameOpt = cardSetRepository.findOwnerUsernameByCardSetId(setId);
+        String creatorUsername = cardSetRepository.findOwnerUsernameByCardSetId(setId);
 
-        if (ownerUsernameOpt.isEmpty()) {
+        if (creatorUsername.isEmpty()) {
             throw new RuntimeException("Card Set not found");
         }
 
-        String ownerUsername = ownerUsernameOpt.get();
-
-        // Check if the current user is the owner
-        if (!ownerUsername.equals(username)) {
+        if (!creatorUsername.equals(username)) {
             throw new RuntimeException("You are not authorized to view these requests");
         }
 
