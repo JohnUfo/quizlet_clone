@@ -2,6 +2,7 @@ package online.muydinov.quizletclone.service;
 
 import lombok.RequiredArgsConstructor;
 import online.muydinov.quizletclone.dto.CardSetDTO;
+import online.muydinov.quizletclone.dto.CardSetWithCardsDTO;
 import online.muydinov.quizletclone.entity.CardSet;
 import online.muydinov.quizletclone.entity.User;
 import online.muydinov.quizletclone.enums.Language;
@@ -25,14 +26,14 @@ public class CardSetService {
     private final UserRepository userRepository;
     private final MyUserDetailsService myUserDetailsService;
     private final CardSetRepository cardSetRepository;
+    private final CardService cardService;
 
-    public CardSet createCardSet(CardSetDTO cardSetDTO) {
+    public CardSetDTO createCardSet(CardSetDTO cardSetDTO) {
         if (cardSetRepository.existsByName(cardSetDTO.getName())) {
-            throw new CardSetAlreadyExistsException("This Set already exists");
+            throw new CardSetAlreadyExistsException("This set already exists.");
         }
 
-        String username = myUserDetailsService.getUsername();
-        User creator = userRepository.findByUsername(username)
+        User creator = userRepository.findByUsername(myUserDetailsService.getUsername())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         CardSet cardSet = new CardSet();
@@ -42,18 +43,17 @@ public class CardSetService {
         cardSet.setFirstLanguage(Language.valueOf(cardSetDTO.getFirstLanguage()));
         cardSet.setSecondLanguage(Language.valueOf(cardSetDTO.getSecondLanguage()));
 
-        return cardSetRepository.save(cardSet);
+        return convertCardSetToDTO(cardSetRepository.save(cardSet));
     }
 
-    public List<CardSetDTO> getAllCardSetsDTO() {
+    public List<CardSetWithCardsDTO> getAllCardSets() {
         return cardSetRepository.findAll().stream()
-                .map(this::convertToDTO)
+                .map(this::convertCardSetWithCardsToDTO)
                 .collect(Collectors.toList());
     }
 
-    public CardSetDTO getCardSetById(Long id) {
-        CardSet cardSet = findCardSetByIdAndVerifyOwner(id);
-        return convertToDTO(cardSet);
+    public CardSetWithCardsDTO getCardSetById(Long id) {
+        return convertCardSetWithCardsToDTO(findCardSetByIdAndVerifyOwner(id));
     }
 
     public void deleteCardSet(Long id) {
@@ -69,21 +69,29 @@ public class CardSetService {
         cardSet.setFirstLanguage(Language.valueOf(cardSetDTO.getFirstLanguage()));
         cardSet.setSecondLanguage(Language.valueOf(cardSetDTO.getSecondLanguage()));
 
-        return convertToDTO(cardSetRepository.save(cardSet));
+        return convertCardSetToDTO(cardSetRepository.save(cardSet));
     }
 
     private CardSet findCardSetByIdAndVerifyOwner(Long id) {
         String username = myUserDetailsService.getUsername();
-        CardSet cardSet = cardSetRepository.findById(id)
-                .orElseThrow(() -> new CardSetNotFoundException("Card Set not found"));
-
-        if (!cardSet.getCreator().getUsername().equals(username)) {
-            throw new UnauthorizedAccessException("You do not have permission to access this Card Set");
-        }
-        return cardSet;
+        return cardSetRepository.findById(id)
+                .filter(cardSet -> cardSet.getCreator().getUsername().equals(username))
+                .orElseThrow(() -> new UnauthorizedAccessException("Access denied or Card Set not found"));
     }
 
-    public CardSetDTO convertToDTO(CardSet cardSet) {
+    private CardSetWithCardsDTO convertCardSetWithCardsToDTO(CardSet cardSet) {
+        return new CardSetWithCardsDTO(
+                cardSet.getId(),
+                cardSet.getName(),
+                cardSet.isPublic(),
+                cardSet.getFirstLanguage().toString(),
+                cardSet.getSecondLanguage().toString(),
+                cardSet.getCreator().getId(),
+                cardService.convertCardToDTO(cardSet.getCards())
+        );
+    }
+
+    private CardSetDTO convertCardSetToDTO(CardSet cardSet) {
         return new CardSetDTO(
                 cardSet.getId(),
                 cardSet.getName(),

@@ -2,9 +2,11 @@ package online.muydinov.quizletclone.controller;
 
 import lombok.RequiredArgsConstructor;
 import online.muydinov.quizletclone.dto.CardSetDTO;
+import online.muydinov.quizletclone.dto.CardSetWithCardsDTO;
 import online.muydinov.quizletclone.dto.SetAccessRequestDTO;
 import online.muydinov.quizletclone.service.CardSetService;
 import online.muydinov.quizletclone.service.SetAccessRequestService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,16 +22,17 @@ public class CardSetController {
 
     @PostMapping
     public ResponseEntity<CardSetDTO> createCardSet(@RequestBody CardSetDTO cardSetDTO) {
-        return ResponseEntity.ok(cardSetService.convertToDTO(cardSetService.createCardSet(cardSetDTO)));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(cardSetService.createCardSet(cardSetDTO));
     }
 
     @GetMapping
-    public ResponseEntity<List<CardSetDTO>> getAllCardSets() {
-        return ResponseEntity.ok(cardSetService.getAllCardSetsDTO());
+    public ResponseEntity<List<CardSetWithCardsDTO>> getAllCardSets() {
+        return ResponseEntity.ok(cardSetService.getAllCardSets());
     }
 
     @GetMapping("/{cardSetId}")
-    public ResponseEntity<CardSetDTO> getCardSetById(@PathVariable Long cardSetId) {
+    public ResponseEntity<CardSetWithCardsDTO> getCardSetById(@PathVariable Long cardSetId) {
         return ResponseEntity.ok(cardSetService.getCardSetById(cardSetId));
     }
 

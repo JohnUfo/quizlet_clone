@@ -10,6 +10,7 @@ import online.muydinov.quizletclone.repository.CardRepository;
 import online.muydinov.quizletclone.repository.CardSetRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -52,5 +53,19 @@ public class CardService {
 
     public List<Card> getAllCardsByCardSetId(Long cardSetId) {
         return cardRepository.findAllByCardSet_Id(cardSetId);
+    }
+
+    public List<CardDTO> convertCardToDTO(List<Card> cardList) {
+        List<CardDTO> cardDTOList = new ArrayList<>();
+
+        for (Card card : cardList) {
+            CardDTO cardDTO = new CardDTO();
+            cardDTO.setId(card.getId());
+            cardDTO.setFirstCard(card.getFirstCard());
+            cardDTO.setSecondCard(card.getSecondCard());
+            cardDTOList.add(cardDTO);
+        }
+
+        return cardDTOList;
     }
 }

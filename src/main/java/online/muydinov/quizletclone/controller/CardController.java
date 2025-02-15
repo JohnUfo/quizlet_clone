@@ -20,7 +20,7 @@ public class CardController {
     // check creator
     @PostMapping("/{cardSetId}")
     public ResponseEntity<String> createCard(@PathVariable(name = "cardSetId") Long cardSetId, @RequestBody CardDTO cardDTO) {
-        cardService.createCard(cardDTO,cardSetId);
+        cardService.createCard(cardDTO, cardSetId);
         return ResponseEntity.status(HttpStatus.CREATED).body("Card Created");
     }
 
