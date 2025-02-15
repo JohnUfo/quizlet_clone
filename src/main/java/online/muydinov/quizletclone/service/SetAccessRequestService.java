@@ -13,6 +13,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -21,14 +22,21 @@ public class SetAccessRequestService {
     private final SetAccessRequestRepository accessRequestRepository;
     private final CardSetRepository cardSetRepository;
     private final UserRepository userRepository;
+    private final MyUserDetailsService myUserDetailsService;
 
     public String requestAccess(Long setId) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
+
         User requester = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         CardSet cardSet = cardSetRepository.findById(setId)
                 .orElseThrow(() -> new RuntimeException("Card Set not found"));
+
+        // Check if requester is owner
+        if (cardSet.getCreator().equals(requester)) {
+            return "You are the owner of this Set";
+        }
 
         // Check if already has access
         if (cardSet.getApprovedUsers().contains(requester)) {
@@ -74,10 +82,21 @@ public class SetAccessRequestService {
     }
 
     public List<SetAccessRequestDTO> getPendingRequests(Long setId) {
-        Long cardSetId = cardSetRepository.findCardSetIdById(setId)
-                .orElseThrow(() -> new RuntimeException("Card Set not found"));
+        String username = myUserDetailsService.getUsername();
+        Optional<String> ownerUsernameOpt = cardSetRepository.findOwnerUsernameByCardSetId(setId);
 
-        return accessRequestRepository.findPendingRequestsByCardSetId(cardSetId, RequestStatus.PENDING);
+        if (ownerUsernameOpt.isEmpty()) {
+            throw new RuntimeException("Card Set not found");
+        }
+
+        String ownerUsername = ownerUsernameOpt.get();
+
+        // Check if the current user is the owner
+        if (!ownerUsername.equals(username)) {
+            throw new RuntimeException("You are not authorized to view these requests");
+        }
+
+        return accessRequestRepository.findPendingRequestsByCardSetId(setId, RequestStatus.PENDING);
     }
 
 }

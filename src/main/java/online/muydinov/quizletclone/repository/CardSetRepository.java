@@ -9,6 +9,7 @@ import java.util.Optional;
 public interface CardSetRepository extends JpaRepository<CardSet, Long> {
     boolean existsByName(String name);
 
-    @Query("SELECT c.id FROM CardSet c WHERE c.id = :setId")
-    Optional<Long> findCardSetIdById(Long setId);
+    @Query("SELECT c.creator.username FROM CardSet c WHERE c.id = :setId")
+    Optional<String> findOwnerUsernameByCardSetId(Long setId);
+
 }

@@ -14,8 +14,6 @@ import java.util.Optional;
 public interface SetAccessRequestRepository extends JpaRepository<SetAccessRequest, Long> {
     Optional<SetAccessRequest> findByRequesterAndCardSet(User requester, CardSet cardSet);
 
-    List<SetAccessRequest> findByCardSetAndStatus(CardSet cardSet, RequestStatus status);
-
     @Query("SELECT new online.muydinov.quizletclone.dto.SetAccessRequestDTO(r.id, r.requester.username, r.status) " +
             "FROM SetAccessRequest r WHERE r.cardSet.id = :cardSetId AND r.status = :status")
     List<SetAccessRequestDTO> findPendingRequestsByCardSetId(Long cardSetId, RequestStatus status);

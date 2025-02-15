@@ -15,4 +15,5 @@ public class CardSetDTO {
     private boolean isPublic;
     private String firstLanguage;
     private String secondLanguage;
+    private Long ownerId;
 }

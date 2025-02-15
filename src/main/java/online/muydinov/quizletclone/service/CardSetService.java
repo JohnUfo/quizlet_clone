@@ -13,6 +13,7 @@ import online.muydinov.quizletclone.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,7 +45,6 @@ public class CardSetService {
     }
 
 
-
     public List<CardSetDTO> getAllCardSetsDTO() {
         List<CardSet> cardSets = cardSetRepository.findAll();
         return cardSets.stream()
@@ -53,20 +53,34 @@ public class CardSetService {
     }
 
     public CardSetDTO getCardSetById(Long id) {
+        String username = myUserDetailsService.getUsername();
         CardSet cardSet = cardSetRepository.findById(id)
                 .orElseThrow(() -> new CardSetNotFoundException("Card Set not found"));
-        return convertToDTO(cardSet);
+
+        if (cardSet.getCreator().getUsername().equals(username)) {
+            return convertToDTO(cardSet);
+        }
+        throw new CardSetNotFoundException("You don't have card sets");
     }
 
 
     public void deleteCardSet(Long id) {
+        String username = myUserDetailsService.getUsername();
         CardSet cardSet = cardSetRepository.findById(id)
                 .orElseThrow(() -> new CardSetNotFoundException("Card Set not found"));
 
-        cardSetRepository.delete(cardSet);
+        if (cardSet.getCreator().getUsername().equals(username)) {
+            cardSetRepository.delete(cardSet);
+        } else {
+            throw new CardSetNotFoundException("You don't have card sets");
+        }
     }
 
     public CardSetDTO updateCardSet(Long id, CardSetDTO cardSetDTO) {
+        Optional<String> ownerUsernameByCardSetId = cardSetRepository.findOwnerUsernameByCardSetId(id);
+        String username = myUserDetailsService.getUsername();
+        if (username.equals(ownerUsernameByCardSetId.get())) {
+
         return cardSetRepository.findById(id)
                 .map(existingCardSet -> {
                     existingCardSet.setName(cardSetDTO.getName());
@@ -76,8 +90,10 @@ public class CardSetService {
                     return convertToDTO(cardSetRepository.save(existingCardSet));
                 })
                 .orElseThrow(() -> new CardSetNotFoundException("Card Set not found"));
+        }else {
+            throw new CardSetNotFoundException("You can only update your card set");
+        }
     }
-
 
 
     public CardSetDTO convertToDTO(CardSet cardSet) {
@@ -86,7 +102,8 @@ public class CardSetService {
                 cardSet.getName(),
                 cardSet.isPublic(),
                 cardSet.getFirstLanguage().toString(),
-                cardSet.getSecondLanguage().toString()
+                cardSet.getSecondLanguage().toString(),
+                cardSet.getCreator().getId()
         );
     }
 }
