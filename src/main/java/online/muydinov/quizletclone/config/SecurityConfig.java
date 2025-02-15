@@ -5,6 +5,7 @@ import online.muydinov.quizletclone.service.MyUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -33,6 +34,9 @@ public class SecurityConfig {
         return http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> request
                         .requestMatchers("/login", "/register").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/cardsets/{cardSetId}/request-access").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/cardsets/{cardSetId}/requests").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/cardsets/{cardSetId}/requests/{requestId}").authenticated()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .httpBasic(Customizer.withDefaults())
