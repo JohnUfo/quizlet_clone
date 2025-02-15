@@ -7,7 +7,6 @@ import online.muydinov.quizletclone.entity.CardSet;
 import online.muydinov.quizletclone.entity.User;
 import online.muydinov.quizletclone.enums.Language;
 import online.muydinov.quizletclone.exceptions.CardSetAlreadyExistsException;
-import online.muydinov.quizletclone.exceptions.CardSetNotFoundException;
 import online.muydinov.quizletclone.exceptions.UnauthorizedAccessException;
 import online.muydinov.quizletclone.exceptions.UserNotFoundException;
 import online.muydinov.quizletclone.repository.CardSetRepository;

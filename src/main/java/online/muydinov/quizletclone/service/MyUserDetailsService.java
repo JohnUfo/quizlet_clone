@@ -1,6 +1,5 @@
 package online.muydinov.quizletclone.service;
 
-import online.muydinov.quizletclone.entity.User;
 import online.muydinov.quizletclone.entity.UserPrincipal;
 import online.muydinov.quizletclone.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
