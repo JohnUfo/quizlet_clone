@@ -1,4 +1,4 @@
-package online.muydinov.quizletclone.exceptions;
+package online.muydinov.quizletclone.exceptions.response;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
