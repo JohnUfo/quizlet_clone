@@ -17,5 +17,4 @@ public interface SetAccessRequestRepository extends JpaRepository<SetAccessReque
     @Query("SELECT new online.muydinov.quizletclone.dto.SetAccessRequestDTO(r.id, r.requester.username, r.status) " +
             "FROM SetAccessRequest r WHERE r.cardSet.id = :cardSetId AND r.status = :status")
     List<SetAccessRequestDTO> findPendingRequestsByCardSetId(Long cardSetId, RequestStatus status);
-
 }

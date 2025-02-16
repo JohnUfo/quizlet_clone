@@ -32,7 +32,7 @@ public class CardSet {
     @JoinColumn(name = "creator_id", nullable = false)
     private User creator;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE})
     @JoinTable(
             name = "set_access_requests",
             joinColumns = @JoinColumn(name = "set_id"),

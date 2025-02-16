@@ -10,8 +10,8 @@ import online.muydinov.quizletclone.repository.CardRepository;
 import online.muydinov.quizletclone.repository.CardSetRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -21,13 +21,11 @@ public class CardService {
     private final CardSetRepository cardSetRepository;
 
     public void createCard(CardDTO cardDTO, Long cardSetId) {
-        if (!cardSetRepository.existsById(cardSetId)) {
-            throw new CardSetNotFoundException("CardSet with ID " + cardSetId + " not found");
-        }
+        CardSet cardSet = cardSetRepository.findById(cardSetId)
+                .orElseThrow(() -> new CardSetNotFoundException("CardSet with ID " + cardSetId + " not found"));
 
-        CardSet cardSetRef = new CardSet();
-        cardSetRef.setId(cardSetId);
-        cardRepository.save(new Card(null, cardDTO.getFirstCard(), cardDTO.getSecondCard(), cardSetRef));
+        Card card = new Card(null, cardDTO.getFirstCard(), cardDTO.getSecondCard(), cardSet);
+        cardRepository.save(card);
     }
 
     public Card getCardById(Long cardId) {
@@ -56,16 +54,8 @@ public class CardService {
     }
 
     public List<CardDTO> convertCardToDTO(List<Card> cardList) {
-        List<CardDTO> cardDTOList = new ArrayList<>();
-
-        for (Card card : cardList) {
-            CardDTO cardDTO = new CardDTO();
-            cardDTO.setId(card.getId());
-            cardDTO.setFirstCard(card.getFirstCard());
-            cardDTO.setSecondCard(card.getSecondCard());
-            cardDTOList.add(cardDTO);
-        }
-
-        return cardDTOList;
+        return cardList.stream()
+                .map(card -> new CardDTO(card.getId(), card.getFirstCard(), card.getSecondCard()))
+                .collect(Collectors.toList());
     }
 }

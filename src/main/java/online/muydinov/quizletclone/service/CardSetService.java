@@ -28,16 +28,12 @@ public class CardSetService {
     private final CardService cardService;
 
     public CardSetDTO createCardSet(CardSetDTO cardSetDTO) {
-        if (cardSetRepository.existsByName(cardSetDTO.getName())) {
-            throw new CardSetAlreadyExistsException("This set already exists.");
-        }
-
         User creator = userRepository.findByUsername(myUserDetailsService.getUsername())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         CardSet cardSet = new CardSet();
         cardSet.setName(cardSetDTO.getName());
-        cardSet.setPublic(cardSetDTO.isPublic());
+        cardSet.setPublic(cardSetDTO.getIsPublic());
         cardSet.setCreator(creator);
         cardSet.setFirstLanguage(Language.valueOf(cardSetDTO.getFirstLanguage()));
         cardSet.setSecondLanguage(Language.valueOf(cardSetDTO.getSecondLanguage()));
@@ -64,7 +60,7 @@ public class CardSetService {
         CardSet cardSet = findCardSetByIdAndVerifyOwner(id);
 
         cardSet.setName(cardSetDTO.getName());
-        cardSet.setPublic(cardSetDTO.isPublic());
+        cardSet.setPublic(cardSetDTO.getIsPublic());
         cardSet.setFirstLanguage(Language.valueOf(cardSetDTO.getFirstLanguage()));
         cardSet.setSecondLanguage(Language.valueOf(cardSetDTO.getSecondLanguage()));
 
@@ -72,11 +68,10 @@ public class CardSetService {
     }
 
     private CardSet findCardSetByIdAndVerifyOwner(Long id) {
-        String username = myUserDetailsService.getUsername();
-        return cardSetRepository.findById(id)
-                .filter(cardSet -> cardSet.getCreator().getUsername().equals(username))
+        return cardSetRepository.findByIdAndOwner(id, myUserDetailsService.getUsername())
                 .orElseThrow(() -> new UnauthorizedAccessException("Access denied or Card Set not found"));
     }
+
 
     private CardSetWithCardsDTO convertCardSetWithCardsToDTO(CardSet cardSet) {
         return new CardSetWithCardsDTO(

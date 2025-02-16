@@ -42,7 +42,7 @@ public class CardController {
     @DeleteMapping("/{cardId}")
     public ResponseEntity<String> deleteCard(@PathVariable(name = "cardId") Long cardId) {
         cardService.deleteCardById(cardId);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Card Deleted");
+        return ResponseEntity.noContent().build();
     }
 
     // check creator

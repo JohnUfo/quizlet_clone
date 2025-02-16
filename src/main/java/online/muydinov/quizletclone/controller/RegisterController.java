@@ -1,6 +1,7 @@
 package online.muydinov.quizletclone.controller;
 
 import lombok.RequiredArgsConstructor;
+import online.muydinov.quizletclone.dto.RegisterRequestDTO;
 import online.muydinov.quizletclone.entity.User;
 import online.muydinov.quizletclone.service.RegisterService;
 import online.muydinov.quizletclone.service.UserService;
@@ -20,11 +21,11 @@ public class RegisterController {
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<String> register(@RequestBody User user) {
-        if (userService.existsByUsername(user.getUsername())) {
+    public ResponseEntity<String> register(@RequestBody RegisterRequestDTO registerRequest) {
+        if (userService.existsByUsername(registerRequest.getUsername())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("User already exists");
         }
-        registerService.register(user);
-        return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully");
+        User register = registerService.register(registerRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(register.toString());
     }
 }

@@ -2,6 +2,7 @@ package online.muydinov.quizletclone.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import online.muydinov.quizletclone.dto.RegisterRequestDTO;
 import online.muydinov.quizletclone.entity.User;
 import online.muydinov.quizletclone.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,12 +16,14 @@ public class RegisterService {
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
-    public User register(User user) {
-        if (user.getPassword() == null || user.getPassword().isEmpty()) {
+    public User register(RegisterRequestDTO registerRequestDTO) {
+        if (registerRequestDTO.getPassword() == null || registerRequestDTO.getPassword().isEmpty()) {
             throw new IllegalArgumentException("Password cannot be null or empty");
         }
-
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        User user = new User();
+        user.setUsername(registerRequestDTO.getUsername());
+        user.setPassword(passwordEncoder.encode(registerRequestDTO.getPassword()));
+        user.setFullName(registerRequestDTO.getFullName());
         return userRepository.save(user);
     }
 }
