@@ -42,7 +42,7 @@ Make sure you have the following installed on your system:
 
 ### **Step 1: Clone the Repository**
 ```bash
-  git clone https://github.com/your-username/quizlet-clone.git
+  git clone https://github.com/JohnUfo/quizlet-clone.git
   cd quizlet-clone
 ```
 
