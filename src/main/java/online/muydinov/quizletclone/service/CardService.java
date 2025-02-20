@@ -34,10 +34,10 @@ public class CardService {
     }
 
     public void deleteCardById(Long cardId) {
-        Card card = cardRepository.findById(cardId)
-                .orElseThrow(() -> new CardNotFoundException("Card not found"));
-
-        cardRepository.delete(card);
+        if (!cardRepository.existsById(cardId)) {
+            throw new CardNotFoundException("Card not found");
+        }
+        cardRepository.deleteById(cardId);
     }
 
     public Card updateCard(CardDTO cardDTO) {

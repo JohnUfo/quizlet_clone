@@ -37,8 +37,8 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(UnauthorizedAccessException.class)
-    public ResponseEntity<String> handleUnauthorized(UnauthorizedAccessException ex) {
-        return ResponseEntity.status(FORBIDDEN).body(ex.getMessage());
+    public ResponseEntity<ErrorResponse> handleUnauthorized(UnauthorizedAccessException ex) {
+        return ResponseEntity.status(FORBIDDEN)
+                .body(new ErrorResponse(ex.getMessage(), FORBIDDEN.value()));
     }
-
 }

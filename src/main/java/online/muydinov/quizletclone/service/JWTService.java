@@ -16,6 +16,8 @@ import java.util.function.Function;
 public class JWTService {
 
     private final SecretKey secretKey;
+    private static final long TOKEN_EXPIRATION = 24 * 60 * 60 * 1000;
+
 
     public JWTService(@Value("${jwt.secret}") String secret) {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes());
@@ -25,7 +27,7 @@ public class JWTService {
         return Jwts.builder()
                 .subject(username)
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24)) // 24 hours
+                .expiration(new Date(System.currentTimeMillis() + TOKEN_EXPIRATION)) // 24 hours
                 .signWith(secretKey)
                 .compact();
     }

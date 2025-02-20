@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Quizlet Clone</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+        h2 {
+            margin-bottom: 20px;
+        }
+        .cardset {
+            background: white;
+            color: black;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Your Card Sets</h2>
+    <div id="cardsets">Loading...</div>
+</div>
+
+<script>
+    async function fetchCardSets() {
+        const token = localStorage.getItem('jwt');
+        if (!token) {
+            window.location.href = '/login.html'; // Redirect if not logged in
+            return;
+        }
+
+        const response = await fetch('/cardsets/my', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+
+        const container = document.getElementById('cardsets');
+        container.innerHTML = ''; // Clear loading text
+
+        if (response.ok) {
+            const cardsets = await response.json();
+            if (cardsets.length === 0) {
+                container.innerHTML = '<p>No card sets found.</p>';
+            } else {
+                cardsets.forEach(set => {
+                    const div = document.createElement('div');
+                    div.className = 'cardset';
+                    div.innerHTML = `<h3>${set.name}</h3>`;
+                    container.appendChild(div);
+                });
+            }
+        } else {
+            container.innerHTML = '<p>Error loading card sets.</p>';
+        }
+    }
+
+    fetchCardSets();
+</script>
+
+</body>
+</html>

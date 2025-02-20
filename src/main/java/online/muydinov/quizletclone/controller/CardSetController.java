@@ -7,6 +7,7 @@ import online.muydinov.quizletclone.dto.CardSetDTO;
 import online.muydinov.quizletclone.dto.CardSetWithCardsDTO;
 import online.muydinov.quizletclone.dto.SetAccessRequestDTO;
 import online.muydinov.quizletclone.service.CardSetService;
+import online.muydinov.quizletclone.service.JWTService;
 import online.muydinov.quizletclone.service.SetAccessRequestService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +23,7 @@ public class CardSetController {
 
     private final CardSetService cardSetService;
     private final SetAccessRequestService setAccessRequestService;
-
+    private final JWTService jwtService;
     @Operation(summary = "Create a New Card Set", description = "Adds a new card set to the system.")
     @PostMapping
     public ResponseEntity<CardSetDTO> createCardSet(@RequestBody CardSetDTO cardSetDTO) {
@@ -30,10 +31,13 @@ public class CardSetController {
                 .body(cardSetService.createCardSet(cardSetDTO));
     }
 
-    @Operation(summary = "Get All Card Sets", description = "Retrieves a list of all available card sets.")
-    @GetMapping
-    public ResponseEntity<List<CardSetWithCardsDTO>> getAllCardSets() {
-        return ResponseEntity.ok(cardSetService.getAllCardSets());
+    @GetMapping("/my")
+    public ResponseEntity<List<CardSetDTO>> getMyCardSets(@RequestHeader("Authorization") String token) {
+        if (token.startsWith("Bearer ")) {
+            token = token.substring(7); // Remove "Bearer " prefix
+        }
+        String username = jwtService.extractUserName(token);
+        return ResponseEntity.ok(cardSetService.getCardSetsByUsername(username));
     }
 
     @Operation(summary = "Get Card Set by ID", description = "Fetches details of a specific card set using its ID.")

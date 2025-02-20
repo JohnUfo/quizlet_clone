@@ -6,7 +6,6 @@ import online.muydinov.quizletclone.dto.CardSetWithCardsDTO;
 import online.muydinov.quizletclone.entity.CardSet;
 import online.muydinov.quizletclone.entity.User;
 import online.muydinov.quizletclone.enums.Language;
-import online.muydinov.quizletclone.exceptions.CardSetAlreadyExistsException;
 import online.muydinov.quizletclone.exceptions.UnauthorizedAccessException;
 import online.muydinov.quizletclone.exceptions.UserNotFoundException;
 import online.muydinov.quizletclone.repository.CardSetRepository;
@@ -14,8 +13,8 @@ import online.muydinov.quizletclone.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -39,12 +38,6 @@ public class CardSetService {
         cardSet.setSecondLanguage(Language.valueOf(cardSetDTO.getSecondLanguage()));
 
         return convertCardSetToDTO(cardSetRepository.save(cardSet));
-    }
-
-    public List<CardSetWithCardsDTO> getAllCardSets() {
-        return cardSetRepository.findAll().stream()
-                .map(this::convertCardSetWithCardsToDTO)
-                .collect(Collectors.toList());
     }
 
     public CardSetWithCardsDTO getCardSetById(Long id) {
@@ -95,4 +88,14 @@ public class CardSetService {
                 cardSet.getCreator().getId()
         );
     }
+
+    public List<CardSetDTO> getCardSetsByUsername(String username) {
+        List<CardSetDTO> cardSetDTOS = new ArrayList<>();
+        for (CardSet cardSet : cardSetRepository.findByOwnersUsername(username)) {
+            CardSetDTO dto = convertCardSetToDTO(cardSet);
+            cardSetDTOS.add(dto);
+        }
+        return cardSetDTOS;
+    }
+
 }

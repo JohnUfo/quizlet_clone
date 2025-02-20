@@ -1,5 +1,7 @@
 package online.muydinov.quizletclone.service;
 
+import com.sun.jdi.request.DuplicateRequestException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import online.muydinov.quizletclone.dto.SetAccessRequestDTO;
 import online.muydinov.quizletclone.entity.CardSet;
@@ -32,20 +34,16 @@ public class SetAccessRequestService {
         CardSet cardSet = cardSetRepository.findById(setId)
                 .orElseThrow(() -> new RuntimeException("Card Set not found"));
 
-        // Check if requester is owner
         if (cardSet.getCreator().equals(requester)) {
             return "You are the owner of this Set";
         }
 
-        // Check if already has access
         if (cardSet.getApprovedUsers().contains(requester)) {
             return "You already have access!";
         }
 
-        // Check if request already exists
-        if (accessRequestRepository.findByRequesterAndCardSet(requester, cardSet).isPresent()) {
-            return "Access request already sent!";
-        }
+        accessRequestRepository.findByRequesterAndCardSet(requester, cardSet)
+                .ifPresent(request -> { throw new DuplicateRequestException("Access request already sent!"); });
 
         SetAccessRequest request = new SetAccessRequest();
         request.setRequester(requester);
@@ -56,6 +54,7 @@ public class SetAccessRequestService {
         return "Request sent successfully!";
     }
 
+    @Transactional
     public String respondToRequest(Long setId, Long requestId, boolean approve) {
         CardSet cardSet = cardSetRepository.findById(setId)
                 .orElseThrow(() -> new RuntimeException("Card Set not found"));
