@@ -5,42 +5,110 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Quizlet Clone</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
         body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(to right, #6a11cb, #2575fc);
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #1e1e2e, #3a3a5a);
             color: white;
             text-align: center;
             padding: 20px;
         }
+
         .container {
-            max-width: 600px;
-            margin: 0 auto;
+            max-width: 900px;
+            margin: auto;
             background: rgba(255, 255, 255, 0.1);
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         }
+
         h2 {
+            margin-bottom: 15px;
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .search-container {
+            position: relative;
             margin-bottom: 20px;
         }
+
+        .search-box {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-align: center;
+        }
+
+        .search-box::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
         .cardset {
-            background: white;
-            color: black;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            font-size: 18px;
+            font-weight: 400;
+            transition: 0.3s ease-in-out;
+            cursor: pointer;
+        }
+
+        .cardset:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .logout-btn {
+            background: #ff4b5c;
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 20px;
+            font-weight: 500;
+        }
+
+        .logout-btn:hover {
+            background: #e63e50;
+            transform: scale(1.05);
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Your Card Sets</h2>
-    <div id="cardsets">Loading...</div>
+    <h2>📚 Your Card Sets</h2>
+    <div class="search-container">
+        <input type="text" id="searchBar" class="search-box" placeholder="🔍 Search your card sets..." onkeyup="filterCardSets()">
+    </div>
+    <div id="cardsets" class="card-grid">Loading...</div>
+    <button class="logout-btn" onclick="logout()">🚪 Logout</button>
 </div>
 
 <script>
+    let cardsets = [];
+
     async function fetchCardSets() {
         const token = localStorage.getItem('jwt');
         if (!token) {
@@ -56,20 +124,37 @@
         container.innerHTML = ''; // Clear loading text
 
         if (response.ok) {
-            const cardsets = await response.json();
+            cardsets = await response.json();
             if (cardsets.length === 0) {
                 container.innerHTML = '<p>No card sets found.</p>';
             } else {
-                cardsets.forEach(set => {
-                    const div = document.createElement('div');
-                    div.className = 'cardset';
-                    div.innerHTML = `<h3>${set.name}</h3>`;
-                    container.appendChild(div);
-                });
+                renderCardSets(cardsets);
             }
         } else {
             container.innerHTML = '<p>Error loading card sets.</p>';
         }
+    }
+
+    function renderCardSets(list) {
+        const container = document.getElementById('cardsets');
+        container.innerHTML = '';
+        list.forEach(set => {
+            const div = document.createElement('div');
+            div.className = 'cardset';
+            div.innerHTML = `<h3>${set.name}</h3>`;
+            container.appendChild(div);
+        });
+    }
+
+    function filterCardSets() {
+        const searchTerm = document.getElementById('searchBar').value.toLowerCase();
+        const filteredSets = cardsets.filter(set => set.name.toLowerCase().includes(searchTerm));
+        renderCardSets(filteredSets);
+    }
+
+    function logout() {
+        localStorage.removeItem('jwt'); // Clear token
+        window.location.href = '/login.html'; // Redirect to login page
     }
 
     fetchCardSets();
