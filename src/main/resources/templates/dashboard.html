@@ -76,6 +76,24 @@
             background: rgba(255, 255, 255, 0.3);
         }
 
+        .btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 10px;
+            font-weight: 500;
+        }
+
+        .btn:hover {
+            background: #218838;
+            transform: scale(1.05);
+        }
+
         .logout-btn {
             background: #ff4b5c;
             color: white;
@@ -93,6 +111,46 @@
             background: #e63e50;
             transform: scale(1.05);
         }
+
+        /* MODAL STYLING */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            color: black;
+            padding: 20px;
+            border-radius: 8px;
+            width: 400px;
+            text-align: left;
+        }
+
+        .modal h3 {
+            margin-top: 0;
+        }
+
+        .modal input, .modal select {
+            width: 100%;
+            padding: 8px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .modal button {
+            width: 100%;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -102,17 +160,46 @@
     <div class="search-container">
         <input type="text" id="searchBar" class="search-box" placeholder="🔍 Search your card sets..." onkeyup="filterCardSets()">
     </div>
+    <button class="btn" onclick="openModal()">➕ Add Card Set</button>
     <div id="cardsets" class="card-grid">Loading...</div>
     <button class="logout-btn" onclick="logout()">🚪 Logout</button>
 </div>
 
+<!-- MODAL FOR ADDING NEW CARD SET -->
+<div id="cardSetModal" class="modal">
+    <div class="modal-content">
+        <h3>Create New Card Set</h3>
+        <input type="text" id="setName" placeholder="Card Set Name">
+        <select id="firstLanguage"></select>
+        <select id="secondLanguage"></select>
+        <label><input type="checkbox" id="isPublic"> Public</label>
+        <button class="btn" onclick="createCardSet()">Create</button>
+        <button class="logout-btn" onclick="closeModal()">Cancel</button>
+    </div>
+</div>
+
 <script>
     let cardsets = [];
+    const languages = [
+        "English", "Spanish", "French", "German", "Russian", "Chinese", "Arabic", "Italian",
+        "Portuguese", "Japanese", "Korean", "Hindi", "Turkish", "Dutch", "Swedish",
+        "Polish", "Greek", "Romanian", "Indonesian", "Vietnamese", "Thai", "Bengali",
+        "Persian", "Urdu", "Hebrew", "Uzbek"
+    ];
+
+    function populateLanguageDropdowns() {
+        const firstLangSelect = document.getElementById('firstLanguage');
+        const secondLangSelect = document.getElementById('secondLanguage');
+        languages.forEach(lang => {
+            firstLangSelect.innerHTML += `<option value="${lang}">${lang}</option>`;
+            secondLangSelect.innerHTML += `<option value="${lang}">${lang}</option>`;
+        });
+    }
 
     async function fetchCardSets() {
         const token = localStorage.getItem('jwt');
         if (!token) {
-            window.location.href = '/login.html'; // Redirect if not logged in
+            window.location.href = '/login.html';
             return;
         }
 
@@ -121,15 +208,11 @@
         });
 
         const container = document.getElementById('cardsets');
-        container.innerHTML = ''; // Clear loading text
+        container.innerHTML = '';
 
         if (response.ok) {
             cardsets = await response.json();
-            if (cardsets.length === 0) {
-                container.innerHTML = '<p>No card sets found.</p>';
-            } else {
-                renderCardSets(cardsets);
-            }
+            renderCardSets(cardsets);
         } else {
             container.innerHTML = '<p>Error loading card sets.</p>';
         }
@@ -139,24 +222,72 @@
         const container = document.getElementById('cardsets');
         container.innerHTML = '';
         list.forEach(set => {
-            const div = document.createElement('div');
-            div.className = 'cardset';
-            div.innerHTML = `<h3>${set.name}</h3>`;
-            container.appendChild(div);
+            container.innerHTML += `<div class="cardset"><h3>${set.name}</h3></div>`;
         });
     }
 
-    function filterCardSets() {
-        const searchTerm = document.getElementById('searchBar').value.toLowerCase();
-        const filteredSets = cardsets.filter(set => set.name.toLowerCase().includes(searchTerm));
-        renderCardSets(filteredSets);
+    function openModal() {
+        document.getElementById('cardSetModal').style.display = 'flex';
     }
+
+    function closeModal() {
+        document.getElementById('cardSetModal').style.display = 'none';
+    }
+
+    async function createCardSet() {
+        const token = localStorage.getItem('jwt');
+        if (!token) {
+            alert("You are not logged in!");
+            return;
+        }
+
+        const setName = document.getElementById('setName').value.trim();
+        const firstLanguage = document.getElementById('firstLanguage').value.toUpperCase();
+        const secondLanguage = document.getElementById('secondLanguage').value.toUpperCase();
+        const isPublic = document.getElementById('isPublic').checked;
+
+        if (!setName) {
+            alert("Card set name cannot be empty!");
+            return;
+        }
+
+        const newCardSet = {
+            name: setName,
+            isPublic: isPublic,
+            firstLanguage: firstLanguage,
+            secondLanguage: secondLanguage
+        };
+
+        try {
+            const response = await fetch('/cardsets', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(newCardSet)
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to create card set");
+            }
+
+            alert("Card Set Created Successfully!");
+            closeModal();
+            fetchCardSets(); // Refresh the dashboard to show new card set
+        } catch (error) {
+            console.error(error);
+            alert("Error creating card set");
+        }
+    }
+
 
     function logout() {
-        localStorage.removeItem('jwt'); // Clear token
-        window.location.href = '/login.html'; // Redirect to login page
+        localStorage.removeItem('jwt');
+        window.location.href = '/login';
     }
 
+    populateLanguageDropdowns();
     fetchCardSets();
 </script>
 
