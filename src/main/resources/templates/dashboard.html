@@ -311,8 +311,15 @@
         const container = document.getElementById('cardsets');
         container.innerHTML = '';
         list.forEach(set => {
-            container.innerHTML += `<div class="cardset"><h3>${set.name}</h3></div>`;
+            container.innerHTML += `
+            <div class="cardset" onclick="openCardSet('${set.id}')">
+                <h3>${set.name}</h3>
+            </div>`;
         });
+    }
+
+    function openCardSet(cardSetId) {
+        window.location.href = `/cards?cardSetId=${cardSetId}`;
     }
 
     function openModal() {

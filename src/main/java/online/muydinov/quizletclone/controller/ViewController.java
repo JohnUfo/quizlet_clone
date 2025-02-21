@@ -2,7 +2,9 @@ package online.muydinov.quizletclone.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 public class ViewController {
@@ -29,5 +31,12 @@ public class ViewController {
     @GetMapping("/dashboard")
     public String showDashboardPage() {
         return "dashboard";
+    }
+
+
+    @GetMapping("/cards")
+    public String getCardsPage(@RequestParam(name = "cardSetId") Long cardSetId, Model model) {
+        model.addAttribute("cardSetId", cardSetId);
+        return "cards";
     }
 }
