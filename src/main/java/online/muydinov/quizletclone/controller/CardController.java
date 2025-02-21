@@ -31,17 +31,17 @@ public class CardController {
 
     @Operation(summary = "Get All Cards in a Card Set", description = "Retrieves all cards belonging to the specified card set.")
     @GetMapping("/allCards/{cardSetId}")
-    public ResponseEntity<List<Card>> getAllCardsByCardSetId(@PathVariable Long cardSetId) {
-        List<Card> cards = cardService.getAllCardsByCardSetId(cardSetId);
+    public ResponseEntity<List<CardDTO>> getAllCardsByCardSetId(@PathVariable(name = "cardSetId") Long cardSetId) {
+        List<CardDTO> cards = cardService.getAllCardsByCardSetId(cardSetId);
         return ResponseEntity.ok(cards);
     }
 
-    @Operation(summary = "Get Card by ID", description = "Fetches details of a specific card by its ID.")
-    @GetMapping("/{cardId}")
-    public ResponseEntity<Card> getCardById(@PathVariable Long cardId) {
-        Card card = cardService.getCardById(cardId);
-        return ResponseEntity.ok(card);
-    }
+//    @Operation(summary = "Get Card by ID", description = "Fetches details of a specific card by its ID.")
+//    @GetMapping("/{cardId}")
+//    public ResponseEntity<Card> getCardById(@PathVariable Long cardId) {
+//        Card card = cardService.getCardById(cardId);
+//        return ResponseEntity.ok(card);
+//    }
 
     @Operation(summary = "Delete a Card", description = "Removes a card from the database using its ID.")
     @DeleteMapping("/{cardId}")

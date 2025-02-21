@@ -49,7 +49,7 @@ public class CardService {
         return cardRepository.save(existingCard);
     }
 
-    public List<Card> getAllCardsByCardSetId(Long cardSetId) {
+    public List<CardDTO> getAllCardsByCardSetId(Long cardSetId) {
         return cardRepository.findAllByCardSet_Id(cardSetId);
     }
 

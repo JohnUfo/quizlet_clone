@@ -1,37 +1,222 @@
-<script>
-    document.addEventListener("DOMContentLoaded", async function () {
-        const cardSetId = document.getElementById("cardSetId").innerText.trim();
-        const token = localStorage.getItem("jwt"); // Retrieve JWT from local storage
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Card Set - Quizlet Clone</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
 
-        if (!token) {
-            console.error("JWT token not found. Redirecting to login...");
-            window.location.href = "/login"; // Redirect to login page if no token
-            return;
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #1e1e2e, #3a3a5a);
+            color: white;
+            text-align: center;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
         }
 
-        console.log("Fetching cards for Card Set ID:", cardSetId);
+        .header {
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+        }
 
+        .logout-btn {
+            background: linear-gradient(135deg, #ff4b5c, #ff6b81);
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            font-size: 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(255, 75, 92, 0.4);
+        }
+
+        .logout-btn:hover {
+            background: linear-gradient(135deg, #e63e50, #ff4b5c);
+            transform: scale(1.05);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .card {
+            width: 350px;
+            height: 250px;
+            perspective: 1000px;
+            cursor: pointer;
+            position: relative;
+            margin: auto;
+        }
+
+        .card-inner {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.5s ease-in-out;
+        }
+
+        .card.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            font-size: 22px;
+            font-weight: 600;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, #0084ff, #00c2ff);
+            color: white;
+        }
+
+        .card-back {
+            background: linear-gradient(135deg, #ffbb00, #ff7700);
+            color: white;
+            transform: rotateY(180deg);
+        }
+
+        .info-text {
+            font-size: 18px;
+            font-weight: 400;
+            margin-top: 10px;
+            opacity: 0.8;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h2>📖 Study Cards</h2>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+</div>
+
+<div class="container">
+    <p class="info-text">Click a card to flip it!</p>
+    <div id="cards" class="card-grid">Loading...</div>
+</div>
+
+<script>
+    const token = localStorage.getItem("jwt");
+
+    if (!token) {
+        alert("You are not logged in!");
+        window.location.href = "login.html";
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const cardSetId = urlParams.get("cardSetId");
+
+    if (!cardSetId) {
+        alert("Invalid Card Set ID!");
+        window.location.href = "dashboard";
+    }
+
+    async function fetchCards() {
         try {
-            const response = await fetch(`/cards/allCards/${cardSetId}`, {
+            const response = await fetch(`cards/allCards/${cardSetId}`, {
                 method: "GET",
                 headers: {
-                    "Authorization": `Bearer ${token}`, // Attach JWT token
+                    "Authorization": `Bearer ${token}`,
                     "Content-Type": "application/json"
                 }
             });
 
             if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
+                if (response.status === 401) {
+                    alert("Session expired, please log in again!");
+                    localStorage.removeItem("jwt");
+                    window.location.href = "/login";
+                } else {
+                    throw new Error(`Failed to fetch cards: ${response.status}`);
+                }
             }
 
-            const text = await response.text();
-            console.log("Raw API Response:", text);
-            document.getElementById("cards-container").innerText = text;
+            const cards = await response.json();
+            renderCards(cards);
         } catch (error) {
             console.error("Error fetching cards:", error);
-            document.getElementById("cards-container").innerText = "Failed to load cards.";
+            alert("Something went wrong. Try again later.");
         }
-    });
-</script>
+    }
 
-<div id="cards-container">Loading...</div>
+    function renderCards(cards) {
+        const container = document.getElementById("cards");
+        container.innerHTML = "";
+
+        if (cards.length === 0) {
+            container.innerHTML = "<p>No cards found.</p>";
+            return;
+        }
+
+        cards.forEach(card => {
+            const cardElement = document.createElement("div");
+            cardElement.classList.add("card");
+
+            cardElement.innerHTML = `
+                <div class="card-inner">
+                    <div class="card-front">${card.firstCard}</div>
+                    <div class="card-back">${card.secondCard}</div>
+                </div>
+            `;
+
+            cardElement.addEventListener("click", () => {
+                cardElement.classList.toggle("flipped");
+            });
+
+            container.appendChild(cardElement);
+        });
+    }
+
+    function logout() {
+        localStorage.removeItem("jwt");
+        window.location.href = "/login";
+    }
+
+    fetchCards();
+</script>
+</body>
+</html>

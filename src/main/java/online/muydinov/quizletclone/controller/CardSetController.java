@@ -34,7 +34,7 @@ public class CardSetController {
     @GetMapping("/my")
     public ResponseEntity<List<CardSetDTO>> getMyCardSets(@RequestHeader("Authorization") String token) {
         if (token.startsWith("Bearer ")) {
-            token = token.substring(7); // Remove "Bearer " prefix
+            token = token.substring(7);
         }
         String username = jwtService.extractUserName(token);
         return ResponseEntity.ok(cardSetService.getCardSetsByUsername(username));
