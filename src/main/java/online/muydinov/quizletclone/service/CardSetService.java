@@ -34,8 +34,8 @@ public class CardSetService {
         cardSet.setName(cardSetDTO.getName());
         cardSet.setPublic(cardSetDTO.getIsPublic());
         cardSet.setCreator(creator);
-        cardSet.setFirstLanguage(Language.valueOf(cardSetDTO.getFirstLanguage()));
-        cardSet.setSecondLanguage(Language.valueOf(cardSetDTO.getSecondLanguage()));
+        cardSet.setFirstLanguage(cardSetDTO.getFirstLanguage());
+        cardSet.setSecondLanguage(cardSetDTO.getSecondLanguage());
 
         return convertCardSetToDTO(cardSetRepository.save(cardSet));
     }
@@ -54,8 +54,8 @@ public class CardSetService {
 
         cardSet.setName(cardSetDTO.getName());
         cardSet.setPublic(cardSetDTO.getIsPublic());
-        cardSet.setFirstLanguage(Language.valueOf(cardSetDTO.getFirstLanguage()));
-        cardSet.setSecondLanguage(Language.valueOf(cardSetDTO.getSecondLanguage()));
+        cardSet.setFirstLanguage(cardSetDTO.getFirstLanguage());
+        cardSet.setSecondLanguage(cardSetDTO.getSecondLanguage());
 
         return convertCardSetToDTO(cardSetRepository.save(cardSet));
     }

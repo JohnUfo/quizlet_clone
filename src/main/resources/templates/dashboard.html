@@ -15,6 +15,35 @@
             padding: 20px;
         }
 
+        .logout-btn {
+            background: linear-gradient(135deg, #ff4b5c, #ff6b81);
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            font-size: 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 160px;
+            margin: 20px auto 0;
+            box-shadow: 0 4px 10px rgba(255, 75, 92, 0.4);
+        }
+
+        .logout-btn:hover {
+            background: linear-gradient(135deg, #e63e50, #ff4b5c);
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(255, 75, 92, 0.6);
+        }
+
+        .logout-btn span {
+            font-size: 18px;
+        }
+
+
         .toggle-container {
             display: flex;
             align-items: center;
@@ -216,10 +245,9 @@
     </div>
     <button class="btn" onclick="openModal()">➕ Add Card Set</button>
     <div id="cardsets" class="card-grid">Loading...</div>
-    <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+    <button class="logout-btn" onclick="logout()">Logout</button>
 </div>
 
-<!-- MODAL FOR ADDING NEW CARD SET -->
 <div id="cardSetModal" class="modal">
     <div class="modal-content">
         <h3>Create New Card Set</h3>
@@ -350,7 +378,12 @@
 
     populateLanguageDropdowns();
     fetchCardSets();
-</script>
 
+    function filterCardSets() {
+        const searchQuery = document.getElementById("searchBar").value.toLowerCase();
+        const filteredSets = cardsets.filter(set => set.name.toLowerCase().includes(searchQuery));
+        renderCardSets(filteredSets);
+    }
+</script>
 </body>
 </html>

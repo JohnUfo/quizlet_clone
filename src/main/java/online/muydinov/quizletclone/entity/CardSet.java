@@ -42,9 +42,9 @@ public class CardSet {
 
     private boolean isPublic;
 
-    @Enumerated(EnumType.STRING)
-    private Language firstLanguage;
 
-    @Enumerated(EnumType.STRING)
-    private Language secondLanguage;
+    @Column(nullable = false)
+    private String firstLanguage;
+    @Column(nullable = false)
+    private String secondLanguage;
 }
