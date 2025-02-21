@@ -70,23 +70,27 @@
 
 <div class="container">
     <h2>Register</h2>
-    <input type="text" id="username" placeholder="Username" required>
-    <input type="password" id="password" placeholder="Password" required>
-    <button class="btn" onclick="registerUser()">Register</button>
+    <form id="registerForm"> <!-- ✅ Wrap inputs inside a form -->
+        <input type="text" id="fullName" placeholder="Full Name" required>
+        <input type="text" id="username" placeholder="Username" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <button type="submit" class="btn">Register</button>
+    </form>
     <p class="message" id="message"></p>
 </div>
 
 <script>
-    async function registerUser() {
+    document.getElementById("registerForm").addEventListener("submit", async function(event) {
+        event.preventDefault(); // ✅ Prevent default form submission (to avoid page reload)
+
+        const fullName = document.getElementById('fullName').value;
         const username = document.getElementById('username').value;
         const password = document.getElementById('password').value;
 
         const response = await fetch('/register', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ username, password })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fullName, username, password })
         });
 
         const message = document.getElementById('message');
@@ -101,7 +105,7 @@
             message.style.color = 'red';
             message.innerText = "Registration failed!";
         }
-    }
+    });
 </script>
 
 </body>

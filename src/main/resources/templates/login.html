@@ -70,14 +70,18 @@
 
 <div class="container">
     <h2>Login</h2>
-    <input type="text" id="username" placeholder="Username" required>
-    <input type="password" id="password" placeholder="Password" required>
-    <button class="btn" onclick="loginUser()">Login</button>
+    <form id="loginForm"> <!-- ✅ Wrap inputs inside a form -->
+        <input type="text" id="username" placeholder="Username" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <button type="submit" class="btn">Login</button>
+    </form>
     <p class="message" id="message"></p>
 </div>
 
 <script>
-    async function loginUser() {
+    document.getElementById("loginForm").addEventListener("submit", async function(event) {
+        event.preventDefault(); // ✅ Prevent default form submission (to avoid page reload)
+
         const username = document.getElementById('username').value;
         const password = document.getElementById('password').value;
 
@@ -100,7 +104,7 @@
             message.style.color = 'red';
             message.innerText = "Invalid credentials!";
         }
-    }
+    });
 </script>
 
 </body>
