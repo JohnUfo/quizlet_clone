@@ -18,13 +18,13 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background: linear-gradient(to right, #6a11cb, #2575fc);
-            color: white;
+            background: linear-gradient(to right, #6a11cb, #2575fc); /* Updated gradient */
+            color: #333; /* Darker text color for better contrast */
             text-align: center;
         }
 
         .container {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.9); /* Light background for the form */
             padding: 40px;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
@@ -33,36 +33,64 @@
 
         h2 {
             margin-bottom: 20px;
+            color: #333; /* Darker heading color */
         }
 
         input {
             width: 100%;
             padding: 10px;
             margin: 10px 0;
-            border: none;
+            border: 1px solid #ccc; /* Light border for inputs */
             border-radius: 5px;
             font-size: 16px;
+            background: rgba(255, 255, 255, 0.9); /* Light background for inputs */
+            color: #333; /* Darker text color for inputs */
+        }
+
+        input::placeholder {
+            color: #666; /* Darker placeholder text */
         }
 
         .btn {
             width: 100%;
             padding: 10px;
             font-size: 18px;
-            background: #4caf50;
+            background: #4caf50; /* Green button */
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             transition: 0.3s;
+            margin-top: 10px;
         }
 
         .btn:hover {
             opacity: 0.8;
         }
 
+        .btn-secondary {
+            background: #ff9800; /* Orange button */
+        }
+
         .message {
             margin-top: 15px;
             font-size: 14px;
+            color: #333; /* Darker text for messages */
+        }
+
+        .link {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #333; /* Darker text for links */
+        }
+
+        .link a {
+            color: #ff9800; /* Orange link color */
+            text-decoration: none;
+        }
+
+        .link a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -70,18 +98,19 @@
 
 <div class="container">
     <h2>Register</h2>
-    <form id="registerForm"> <!-- ✅ Wrap inputs inside a form -->
+    <form id="registerForm">
         <input type="text" id="fullName" placeholder="Full Name" required>
         <input type="text" id="username" placeholder="Username" required>
         <input type="password" id="password" placeholder="Password" required>
         <button type="submit" class="btn">Register</button>
     </form>
     <p class="message" id="message"></p>
+    <p class="link">Already have an account? <a href="/login">Login here</a></p>
 </div>
 
 <script>
     document.getElementById("registerForm").addEventListener("submit", async function(event) {
-        event.preventDefault(); // ✅ Prevent default form submission (to avoid page reload)
+        event.preventDefault(); // Prevent default form submission
 
         const fullName = document.getElementById('fullName').value;
         const username = document.getElementById('username').value;
@@ -95,14 +124,14 @@
 
         const message = document.getElementById('message');
         if (response.status === 201) {
-            message.style.color = 'lightgreen';
+            message.style.color = 'green'; /* Success message in green */
             message.innerText = "Registration successful! You can now log in.";
             setTimeout(() => window.location.href = '/login', 2000);
         } else if (response.status === 409) {
-            message.style.color = 'red';
+            message.style.color = 'red'; /* Error message in red */
             message.innerText = "User already exists!";
         } else {
-            message.style.color = 'red';
+            message.style.color = 'red'; /* Error message in red */
             message.innerText = "Registration failed!";
         }
     });
