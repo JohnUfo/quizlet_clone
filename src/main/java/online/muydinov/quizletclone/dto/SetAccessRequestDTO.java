@@ -1,17 +1,17 @@
 package online.muydinov.quizletclone.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import online.muydinov.quizletclone.enums.RequestStatus;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class SetAccessRequestDTO {
-    private Long requestId;
+    private Long id;
+    private Long cardSetId;
+    private String cardSetName;
     private String requesterUsername;
     private RequestStatus status;
-
-    public SetAccessRequestDTO(Long requestId, String requesterUsername, RequestStatus status) {
-        this.requestId = requestId;
-        this.requesterUsername = requesterUsername;
-        this.status = status;
-    }
 }

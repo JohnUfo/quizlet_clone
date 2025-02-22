@@ -77,8 +77,16 @@ public class CardSetController {
 
     @Operation(summary = "Get Pending Access Requests", description = "Retrieves all pending access requests for a specific card set.")
     @GetMapping("/{cardSetId}/requests")
-    public ResponseEntity<List<SetAccessRequestDTO>> getPendingRequests(@PathVariable Long cardSetId) {
-        return ResponseEntity.ok(setAccessRequestService.getPendingRequests(cardSetId));
+    public ResponseEntity<List<SetAccessRequestDTO>> getPendingRequests(
+            @PathVariable Long cardSetId,
+            @RequestHeader("Authorization") String token) {
+        if (token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+        String username = jwtService.extractUserName(token); // Extract username from JWT
+
+        List<SetAccessRequestDTO> pendingRequests = setAccessRequestService.getPendingRequests(cardSetId, username);
+        return ResponseEntity.ok(pendingRequests);
     }
 
     @Operation(summary = "Respond to Access Request", description = "Approves or rejects a user's access request to a card set.")
@@ -86,7 +94,7 @@ public class CardSetController {
     public ResponseEntity<String> respondToRequest(
             @PathVariable Long cardSetId,
             @PathVariable Long requestId,
-            @RequestParam boolean approve) {
+            @RequestParam boolean approve) { // Ensure this is @RequestParam
         return ResponseEntity.ok(setAccessRequestService.respondToRequest(cardSetId, requestId, approve));
     }
 }

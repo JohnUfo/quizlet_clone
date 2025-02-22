@@ -8,6 +8,8 @@ import online.muydinov.quizletclone.entity.CardSet;
 import online.muydinov.quizletclone.entity.SetAccessRequest;
 import online.muydinov.quizletclone.entity.User;
 import online.muydinov.quizletclone.enums.RequestStatus;
+import online.muydinov.quizletclone.exceptions.CardSetNotFoundException;
+import online.muydinov.quizletclone.exceptions.UnauthorizedAccessException;
 import online.muydinov.quizletclone.repository.CardSetRepository;
 import online.muydinov.quizletclone.repository.SetAccessRequestRepository;
 import online.muydinov.quizletclone.repository.UserRepository;
@@ -15,6 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -79,19 +82,30 @@ public class SetAccessRequestService {
         return "Request has been " + (approve ? "approved" : "rejected");
     }
 
-    public List<SetAccessRequestDTO> getPendingRequests(Long setId) {
-        String username = myUserDetailsService.getUsername();
-        String creatorUsername = cardSetRepository.findOwnerUsernameByCardSetId(setId);
+    public List<SetAccessRequestDTO> getPendingRequests(Long setId, String username) {
+        // Fetch the card set owner's username
+        String creatorUsername = cardSetRepository.findOwnerUsernameByCardSetId(setId)
+                .orElseThrow(() -> new CardSetNotFoundException("Card Set not found"));
 
-        if (creatorUsername.isEmpty()) {
-            throw new RuntimeException("Card Set not found");
-        }
-
+        // Check if the logged-in user is the owner of the card set
         if (!creatorUsername.equals(username)) {
-            throw new RuntimeException("You are not authorized to view these requests");
+            throw new UnauthorizedAccessException("You are not authorized to view these requests");
         }
 
-        return accessRequestRepository.findPendingRequestsByCardSetId(setId, RequestStatus.PENDING);
+        // Fetch pending requests for the card set
+        return accessRequestRepository.findPendingRequestsByCardSetId(setId, RequestStatus.PENDING)
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
+    private SetAccessRequestDTO convertToDTO(SetAccessRequest request) {
+        SetAccessRequestDTO dto = new SetAccessRequestDTO();
+        dto.setId(request.getId());
+        dto.setCardSetId(request.getCardSet().getId());
+        dto.setCardSetName(request.getCardSet().getName());
+        dto.setRequesterUsername(request.getRequester().getUsername());
+        dto.setStatus(request.getStatus());
+        return dto;
+    }
 }

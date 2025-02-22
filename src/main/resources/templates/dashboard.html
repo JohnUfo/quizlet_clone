@@ -277,6 +277,50 @@
         input:checked + .slider:before {
             transform: translateX(26px);
         }
+
+        .notification-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notification-item p {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .notification-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .notification-actions button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .notification-actions button.accept {
+            background: linear-gradient(135deg, #28a745, #218838);
+            color: white;
+        }
+
+        .notification-actions button.reject {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+        }
+
+        .notification-actions button:hover {
+            transform: scale(1.05);
+        }
     </style>
 </head>
 <body>
@@ -322,6 +366,8 @@
 </div>
 
 <script>
+    let cardsets = [];
+
     // Fetch all card sets (including those the user doesn't have access to)
     async function fetchAllCardSets() {
         const token = localStorage.getItem('jwt');
@@ -360,6 +406,35 @@
             console.error('Error fetching user card sets');
             return [];
         }
+    }
+
+    // Fetch pending access requests
+    async function fetchPendingRequests() {
+        const token = localStorage.getItem('jwt');
+        if (!token) {
+            window.location.href = '/login.html';
+            return [];
+        }
+
+        // Fetch the user's card sets
+        const userCardSets = await fetchCardSets();
+
+        // Fetch pending requests for each card set
+        const allRequests = [];
+        for (const cardSet of userCardSets) {
+            const response = await fetch(`/cardsets/${cardSet.id}/requests`, {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+
+            if (response.ok) {
+                const requests = await response.json();
+                allRequests.push(...requests);
+            } else {
+                console.error(`Error fetching requests for card set ${cardSet.id}`);
+            }
+        }
+
+        return allRequests;
     }
 
     // Render all card sets on the Home page
@@ -409,18 +484,71 @@
         `;
 
         const userCardSets = await fetchCardSets();
+        cardsets = userCardSets; // Update the global cardsets variable
         renderCardSets(userCardSets);
     }
 
     // Render Notifications page
-    function renderNotifications() {
+    async function renderNotifications() {
         const container = document.querySelector('.main-content .container');
         container.innerHTML = `
             <div class="header">
                 <h2>🔔 Notifications</h2>
             </div>
-            <p>You have no new notifications.</p>
+            <div id="notifications" class="card-grid">Loading...</div>
         `;
+
+        const pendingRequests = await fetchPendingRequests();
+        const notificationsContainer = document.getElementById('notifications');
+        notificationsContainer.innerHTML = '';
+
+        if (pendingRequests.length === 0) {
+            notificationsContainer.innerHTML = `<p>You have no new notifications.</p>`;
+            return;
+        }
+
+        pendingRequests.forEach(request => {
+            const notificationHTML = `
+                <div class="notification-item">
+                    <p>User <strong>${request.requesterUsername}</strong> requested access to <strong>${request.cardSetName}</strong>.</p>
+                    <div class="notification-actions">
+                        <button class="accept" onclick="handleRequest('${request.id}', 'accept')">Accept</button>
+                        <button class="reject" onclick="handleRequest('${request.id}', 'reject')">Reject</button>
+                    </div>
+                </div>
+            `;
+            notificationsContainer.innerHTML += notificationHTML;
+        });
+    }
+
+    // Handle accept/reject request
+    async function handleRequest(requestId, action) {
+        const token = localStorage.getItem('jwt');
+        if (!token) {
+            alert("You are not logged in!");
+            return;
+        }
+
+        try {
+            // Send the approve parameter as a query parameter
+            const response = await fetch(`/cardsets/${requestId}/requests/${requestId}?approve=${action === 'accept'}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to handle request");
+            }
+
+            // Refresh the notifications list
+            renderNotifications();
+        } catch (error) {
+            console.error(error);
+            alert("Error handling request");
+        }
     }
 
     // Navigate between pages
