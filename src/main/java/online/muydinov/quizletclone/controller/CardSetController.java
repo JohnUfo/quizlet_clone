@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import online.muydinov.quizletclone.dto.CardSetDTO;
 import online.muydinov.quizletclone.dto.CardSetWithCardsDTO;
 import online.muydinov.quizletclone.dto.SetAccessRequestDTO;
+import online.muydinov.quizletclone.entity.CardSet;
 import online.muydinov.quizletclone.service.CardSetService;
 import online.muydinov.quizletclone.service.JWTService;
 import online.muydinov.quizletclone.service.SetAccessRequestService;
@@ -24,6 +25,13 @@ public class CardSetController {
     private final CardSetService cardSetService;
     private final SetAccessRequestService setAccessRequestService;
     private final JWTService jwtService;
+
+    @GetMapping("/all")
+    public ResponseEntity<List<CardSetDTO>> getAllCardSets() {
+        List<CardSetDTO> allCardSets = cardSetService.getAllCardSets();
+        return ResponseEntity.ok(allCardSets);
+    }
+
     @Operation(summary = "Create a New Card Set", description = "Adds a new card set to the system.")
     @PostMapping
     public ResponseEntity<CardSetDTO> createCardSet(@RequestBody CardSetDTO cardSetDTO) {

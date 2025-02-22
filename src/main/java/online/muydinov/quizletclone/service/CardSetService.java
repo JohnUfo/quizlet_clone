@@ -5,7 +5,6 @@ import online.muydinov.quizletclone.dto.CardSetDTO;
 import online.muydinov.quizletclone.dto.CardSetWithCardsDTO;
 import online.muydinov.quizletclone.entity.CardSet;
 import online.muydinov.quizletclone.entity.User;
-import online.muydinov.quizletclone.enums.Language;
 import online.muydinov.quizletclone.exceptions.UnauthorizedAccessException;
 import online.muydinov.quizletclone.exceptions.UserNotFoundException;
 import online.muydinov.quizletclone.repository.CardSetRepository;
@@ -98,4 +97,12 @@ public class CardSetService {
         return cardSetDTOS;
     }
 
+    public List<CardSetDTO> getAllCardSets() {
+        List<CardSetDTO> cardSetDTOS = new ArrayList<>();
+        for (CardSet cardSet : cardSetRepository.findAll()) {
+            CardSetDTO dto = convertCardSetToDTO(cardSet);
+            cardSetDTOS.add(dto);
+        }
+        return cardSetDTOS;
+    }
 }

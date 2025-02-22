@@ -9,11 +9,50 @@
 
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); /* New gradient background */
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
             color: white;
-            text-align: center;
-            padding: 20px;
             margin: 0;
+            display: flex;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 250px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            height: 100vh;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .sidebar button {
+            display: block;
+            width: 100%;
+            background: transparent;
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 16px;
+            text-align: left;
+            cursor: pointer;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .sidebar button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(5px);
+        }
+
+        .sidebar button.active {
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            color: white;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            flex: 1;
+            padding: 20px;
         }
 
         .header {
@@ -24,7 +63,7 @@
         }
 
         .btn {
-            background: linear-gradient(135deg, #6a11cb, #2575fc); /* New gradient for buttons */
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
             color: white;
             border: none;
             padding: 12px 24px;
@@ -42,7 +81,7 @@
         }
 
         .logout-btn {
-            background: linear-gradient(135deg, #ff4b5c, #ff6b81); /* Gradient for logout button */
+            background: linear-gradient(135deg, #ff4b5c, #ff6b81);
             color: white;
             border: none;
             padding: 12px 24px;
@@ -242,20 +281,27 @@
 </head>
 <body>
 
-<div class="container">
-    <!-- Header Section for Buttons -->
-    <div class="header">
-        <button class="btn" onclick="openModal()">➕ Add Card Set</button>
-        <button class="logout-btn" onclick="logout()">Logout</button>
-    </div>
-
-    <h2>📚 Your Card Sets</h2>
-    <div class="search-container">
-        <input type="text" id="searchBar" class="search-box" placeholder="🔍 Search your card sets..." onkeyup="filterCardSets()">
-    </div>
-    <div id="cardsets" class="card-grid">Loading...</div>
+<!-- Sidebar -->
+<div class="sidebar">
+    <button class="active" onclick="navigate('home')">🏠 Home</button>
+    <button onclick="navigate('library')">📚 Your Library</button>
+    <button onclick="navigate('notifications')">🔔 Notifications</button>
 </div>
 
+<!-- Main Content -->
+<div class="main-content">
+    <div class="container">
+        <!-- Header Section for Buttons -->
+        <div class="header">
+            <!-- Add Card Set button will be dynamically added/removed based on the page -->
+            <!-- Logout button will only appear on the Home page -->
+        </div>
+
+        <!-- Content will be dynamically loaded here -->
+    </div>
+</div>
+
+<!-- Modal -->
 <div id="cardSetModal" class="modal">
     <div class="modal-content">
         <h3>Create New Card Set</h3>
@@ -276,23 +322,27 @@
 </div>
 
 <script>
-    let cardsets = [];
-    const languages = [
-        "English", "Spanish", "French", "German", "Russian", "Chinese", "Arabic", "Italian",
-        "Portuguese", "Japanese", "Korean", "Hindi", "Turkish", "Dutch", "Swedish",
-        "Polish", "Greek", "Romanian", "Indonesian", "Vietnamese", "Thai", "Bengali",
-        "Persian", "Urdu", "Hebrew", "Uzbek"
-    ];
+    // Fetch all card sets (including those the user doesn't have access to)
+    async function fetchAllCardSets() {
+        const token = localStorage.getItem('jwt');
+        if (!token) {
+            window.location.href = '/login.html';
+            return;
+        }
 
-    function populateLanguageDropdowns() {
-        const firstLangSelect = document.getElementById('firstLanguage');
-        const secondLangSelect = document.getElementById('secondLanguage');
-        languages.forEach(lang => {
-            firstLangSelect.innerHTML += `<option value="${lang}">${lang}</option>`;
-            secondLangSelect.innerHTML += `<option value="${lang}">${lang}</option>`;
+        const response = await fetch('/cardsets/all', {
+            headers: { 'Authorization': 'Bearer ' + token }
         });
+
+        if (response.ok) {
+            return await response.json();
+        } else {
+            console.error('Error fetching all card sets');
+            return [];
+        }
     }
 
+    // Fetch card sets the user has access to
     async function fetchCardSets() {
         const token = localStorage.getItem('jwt');
         if (!token) {
@@ -304,40 +354,131 @@
             headers: { 'Authorization': 'Bearer ' + token }
         });
 
-        const container = document.getElementById('cardsets');
-        container.innerHTML = '';
-
         if (response.ok) {
-            cardsets = await response.json();
-            renderCardSets(cardsets);
+            return await response.json();
         } else {
-            container.innerHTML = '<p>Error loading card sets.</p>';
+            console.error('Error fetching user card sets');
+            return [];
         }
     }
 
-    function renderCardSets(list) {
-        const container = document.getElementById('cardsets');
-        container.innerHTML = '';
-        list.forEach(set => {
-            container.innerHTML += `
-            <div class="cardset" onclick="openCardSet('${set.id}')">
-                <h3>${set.name}</h3>
-            </div>`;
+    // Render all card sets on the Home page
+    async function renderAllCardSets() {
+        const container = document.querySelector('.main-content .container');
+        container.innerHTML = `
+            <div class="header">
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+            <h2>🏠 Home</h2>
+            <div class="search-container">
+                <input type="text" id="searchBar" class="search-box" placeholder="🔍 Search all card sets..." onkeyup="filterAllCardSets()">
+            </div>
+            <div id="all-cardsets" class="card-grid">Loading...</div>
+        `;
+
+        const allCardSets = await fetchAllCardSets();
+        const userCardSets = await fetchCardSets();
+
+        const allCardSetsContainer = document.getElementById('all-cardsets');
+        allCardSetsContainer.innerHTML = '';
+
+        allCardSets.forEach(set => {
+            const hasAccess = userCardSets.some(userSet => userSet.id === set.id);
+
+            const cardSetHTML = `
+                <div class="cardset" onclick="${hasAccess ? `openCardSet('${set.id}')` : 'alert(\'You do not have access to this card set.\')'}">
+                    <h3>${set.name}</h3>
+                </div>
+            `;
+            allCardSetsContainer.innerHTML += cardSetHTML;
         });
     }
 
+    // Render card sets in the Library page
+    async function renderLibraryCardSets() {
+        const container = document.querySelector('.main-content .container');
+        container.innerHTML = `
+            <div class="header">
+                <button class="btn" onclick="openModal()">➕ Add Card Set</button>
+            </div>
+            <h2>📚 Your Library</h2>
+            <div class="search-container">
+                <input type="text" id="searchBar" class="search-box" placeholder="🔍 Search your card sets..." onkeyup="filterCardSets()">
+            </div>
+            <div id="cardsets" class="card-grid">Loading...</div>
+        `;
+
+        const userCardSets = await fetchCardSets();
+        renderCardSets(userCardSets);
+    }
+
+    // Render Notifications page
+    function renderNotifications() {
+        const container = document.querySelector('.main-content .container');
+        container.innerHTML = `
+            <div class="header">
+                <h2>🔔 Notifications</h2>
+            </div>
+            <p>You have no new notifications.</p>
+        `;
+    }
+
+    // Navigate between pages
+    function navigate(page) {
+        const buttons = document.querySelectorAll('.sidebar button');
+        buttons.forEach(button => button.classList.remove('active'));
+
+        const activeButton = document.querySelector(`.sidebar button[onclick="navigate('${page}')"]`);
+        activeButton.classList.add('active');
+
+        switch (page) {
+            case 'home':
+                renderAllCardSets();
+                break;
+            case 'library':
+                renderLibraryCardSets();
+                break;
+            case 'notifications':
+                renderNotifications();
+                break;
+            default:
+                console.error('Invalid page:', page);
+        }
+    }
+
+    // Render card sets
+    function renderCardSets(list) {
+        const container = document.getElementById('cardsets');
+        if (!container) {
+            console.error('Cardsets container not found');
+            return;
+        }
+        container.innerHTML = '';
+        list.forEach(set => {
+            container.innerHTML += `
+                <div class="cardset" onclick="openCardSet('${set.id}')">
+                    <h3>${set.name}</h3>
+                </div>
+            `;
+        });
+    }
+
+    // Open a specific card set
     function openCardSet(cardSetId) {
         window.location.href = `/cards?cardSetId=${cardSetId}`;
     }
 
+    // Open the modal for creating a new card set
     function openModal() {
         document.getElementById('cardSetModal').style.display = 'flex';
     }
 
+    // Close the modal
     function closeModal() {
         document.getElementById('cardSetModal').style.display = 'none';
     }
 
+    // Create a new card set
     async function createCardSet() {
         const token = localStorage.getItem('jwt');
         if (!token) {
@@ -376,7 +517,6 @@
                 throw new Error("Failed to create card set");
             }
 
-            // Close the modal and refresh the card sets list
             closeModal();
             fetchCardSets();
         } catch (error) {
@@ -385,19 +525,32 @@
         }
     }
 
+    // Logout the user
     function logout() {
         localStorage.removeItem('jwt');
         window.location.href = '/login';
     }
 
-    populateLanguageDropdowns();
-    fetchCardSets();
+    // Populate language dropdowns
+    function populateLanguageDropdowns() {
+        const languages = [
+            "English", "Spanish", "French", "German", "Russian", "Chinese", "Arabic", "Italian",
+            "Portuguese", "Japanese", "Korean", "Hindi", "Turkish", "Dutch", "Swedish",
+            "Polish", "Greek", "Romanian", "Indonesian", "Vietnamese", "Thai", "Bengali",
+            "Persian", "Urdu", "Hebrew", "Uzbek"
+        ];
 
-    function filterCardSets() {
-        const searchQuery = document.getElementById("searchBar").value.toLowerCase();
-        const filteredSets = cardsets.filter(set => set.name.toLowerCase().includes(searchQuery));
-        renderCardSets(filteredSets);
+        const firstLangSelect = document.getElementById('firstLanguage');
+        const secondLangSelect = document.getElementById('secondLanguage');
+        languages.forEach(lang => {
+            firstLangSelect.innerHTML += `<option value="${lang}">${lang}</option>`;
+            secondLangSelect.innerHTML += `<option value="${lang}">${lang}</option>`;
+        });
     }
+
+    // Initial load
+    populateLanguageDropdowns();
+    navigate('home'); // Default to Home page
 </script>
 </body>
 </html>
