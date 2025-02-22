@@ -15,6 +15,21 @@
             padding: 20px;
         }
 
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .header .btn {
+            margin: 0;
+        }
+
+        .header .logout-btn {
+            margin: 0;
+        }
+
         .logout-btn {
             background: linear-gradient(135deg, #ff4b5c, #ff6b81);
             color: white;
@@ -29,7 +44,6 @@
             align-items: center;
             justify-content: center;
             width: 160px;
-            margin: 20px auto 0;
             box-shadow: 0 4px 10px rgba(255, 75, 92, 0.4);
         }
 
@@ -42,7 +56,6 @@
         .logout-btn span {
             font-size: 18px;
         }
-
 
         .toggle-container {
             display: flex;
@@ -96,7 +109,6 @@
         input:checked + .slider:before {
             transform: translateX(26px);
         }
-
 
         .container {
             max-width: 900px;
@@ -186,7 +198,6 @@
             border-radius: 8px;
             cursor: pointer;
             transition: 0.3s;
-            margin-top: 20px;
             font-weight: 500;
         }
 
@@ -239,13 +250,17 @@
 <body>
 
 <div class="container">
+    <!-- Header Section for Buttons -->
+    <div class="header">
+        <button class="btn" onclick="openModal()">➕ Add Card Set</button>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+
     <h2>📚 Your Card Sets</h2>
     <div class="search-container">
         <input type="text" id="searchBar" class="search-box" placeholder="🔍 Search your card sets..." onkeyup="filterCardSets()">
     </div>
-    <button class="btn" onclick="openModal()">➕ Add Card Set</button>
     <div id="cardsets" class="card-grid">Loading...</div>
-    <button class="logout-btn" onclick="logout()">Logout</button>
 </div>
 
 <div id="cardSetModal" class="modal">
@@ -368,7 +383,7 @@
                 throw new Error("Failed to create card set");
             }
 
-            alert("Card Set Created Successfully!");
+            // Close the modal and refresh the card sets list
             closeModal();
             fetchCardSets();
         } catch (error) {
@@ -376,7 +391,6 @@
             alert("Error creating card set");
         }
     }
-
 
     function logout() {
         localStorage.removeItem('jwt');
