@@ -441,15 +441,15 @@
     async function renderAllCardSets() {
         const container = document.querySelector('.main-content .container');
         container.innerHTML = `
-            <div class="header">
-                <button class="logout-btn" onclick="logout()">Logout</button>
-            </div>
-            <h2>🏠 Home</h2>
-            <div class="search-container">
-                <input type="text" id="searchBar" class="search-box" placeholder="🔍 Search all card sets..." onkeyup="filterAllCardSets()">
-            </div>
-            <div id="all-cardsets" class="card-grid">Loading...</div>
-        `;
+        <div class="header">
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+        <h2>🏠 Home</h2>
+        <div class="search-container">
+            <input type="text" id="searchBar" class="search-box" placeholder="🔍 Search all card sets..." onkeyup="filterAllCardSets()">
+        </div>
+        <div id="all-cardsets" class="card-grid">Loading...</div>
+    `;
 
         const allCardSets = await fetchAllCardSets();
         const userCardSets = await fetchCardSets();
@@ -461,12 +461,45 @@
             const hasAccess = userCardSets.some(userSet => userSet.id === set.id);
 
             const cardSetHTML = `
-                <div class="cardset" onclick="${hasAccess ? `openCardSet('${set.id}')` : 'alert(\'You do not have access to this card set.\')'}">
-                    <h3>${set.name}</h3>
-                </div>
-            `;
+            <div class="cardset">
+                <h3>${set.name}</h3>
+                ${hasAccess ?
+                `<button class="btn" onclick="openCardSet('${set.id}')">Open</button>` :
+                `<button class="btn" onclick="requestAccess('${set.id}')">Request Access</button>`
+            }
+            </div>
+        `;
             allCardSetsContainer.innerHTML += cardSetHTML;
         });
+    }
+
+    async function requestAccess(cardSetId) {
+        const token = localStorage.getItem('jwt');
+        if (!token) {
+            alert("You are not logged in!");
+            return;
+        }
+
+        try {
+            const response = await fetch(`/cardsets/${cardSetId}/request-access`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to request access");
+            }
+
+            const result = await response.text();
+            alert(result);
+            renderAllCardSets(); // Refresh the list
+        } catch (error) {
+            console.error(error);
+            alert("Error requesting access");
+        }
     }
 
     // Render card sets in the Library page
@@ -592,8 +625,27 @@
     }
 
     // Open a specific card set
-    function openCardSet(cardSetId) {
-        window.location.href = `/cards?cardSetId=${cardSetId}`;
+    async function openCardSet(cardSetId) {
+        const token = localStorage.getItem('jwt');
+        if (!token) {
+            alert("You are not logged in!");
+            return;
+        }
+
+        try {
+            const response = await fetch(`/cardsets/${cardSetId}`, {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+
+            if (!response.ok) {
+                throw new Error("You do not have access to this card set");
+            }
+
+            window.location.href = `/cards?cardSetId=${cardSetId}`;
+        } catch (error) {
+            console.error(error);
+            alert(error.message);
+        }
     }
 
     // Open the modal for creating a new card set

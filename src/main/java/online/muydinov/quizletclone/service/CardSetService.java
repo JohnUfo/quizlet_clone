@@ -5,6 +5,7 @@ import online.muydinov.quizletclone.dto.CardSetDTO;
 import online.muydinov.quizletclone.dto.CardSetWithCardsDTO;
 import online.muydinov.quizletclone.entity.CardSet;
 import online.muydinov.quizletclone.entity.User;
+import online.muydinov.quizletclone.exceptions.CardSetNotFoundException;
 import online.muydinov.quizletclone.exceptions.UnauthorizedAccessException;
 import online.muydinov.quizletclone.exceptions.UserNotFoundException;
 import online.muydinov.quizletclone.repository.CardSetRepository;
@@ -39,8 +40,15 @@ public class CardSetService {
         return convertCardSetToDTO(cardSetRepository.save(cardSet));
     }
 
-    public CardSetWithCardsDTO getCardSetById(Long id) {
-        return convertCardSetWithCardsToDTO(findCardSetByIdAndVerifyOwner(id));
+    public CardSetWithCardsDTO getCardSetById(Long id, String username) {
+        CardSet cardSet = cardSetRepository.findById(id)
+                .orElseThrow(() -> new CardSetNotFoundException("Card Set not found"));
+
+        if (!hasAccessToCardSet(id, username)) {
+            throw new UnauthorizedAccessException("You do not have access to this card set");
+        }
+
+        return convertCardSetWithCardsToDTO(cardSet);
     }
 
     public void deleteCardSet(Long id) {
@@ -62,6 +70,16 @@ public class CardSetService {
     private CardSet findCardSetByIdAndVerifyOwner(Long id) {
         return cardSetRepository.findByIdAndOwner(id, myUserDetailsService.getUsername())
                 .orElseThrow(() -> new UnauthorizedAccessException("Access denied or Card Set not found"));
+    }
+
+    public boolean hasAccessToCardSet(Long cardSetId, String username) {
+        CardSet cardSet = cardSetRepository.findById(cardSetId)
+                .orElseThrow(() -> new CardSetNotFoundException("Card Set not found"));
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        return cardSet.getCreator().equals(user) || cardSet.getApprovedUsers().contains(user);
     }
 
 

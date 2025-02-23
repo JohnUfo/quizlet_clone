@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import online.muydinov.quizletclone.dto.CardSetDTO;
 import online.muydinov.quizletclone.dto.CardSetWithCardsDTO;
 import online.muydinov.quizletclone.dto.SetAccessRequestDTO;
-import online.muydinov.quizletclone.entity.CardSet;
 import online.muydinov.quizletclone.service.CardSetService;
 import online.muydinov.quizletclone.service.JWTService;
 import online.muydinov.quizletclone.service.SetAccessRequestService;
@@ -50,8 +49,12 @@ public class CardSetController {
 
     @Operation(summary = "Get Card Set by ID", description = "Fetches details of a specific card set using its ID.")
     @GetMapping("/{cardSetId}")
-    public ResponseEntity<CardSetWithCardsDTO> getCardSetById(@PathVariable Long cardSetId) {
-        return ResponseEntity.ok(cardSetService.getCardSetById(cardSetId));
+    public ResponseEntity<CardSetWithCardsDTO> getCardSetById(@PathVariable Long cardSetId, @RequestHeader("Authorization") String token) {
+        if (token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+        String username = jwtService.extractUserName(token);
+        return ResponseEntity.ok(cardSetService.getCardSetById(cardSetId, username));
     }
 
     @Operation(summary = "Delete a Card Set", description = "Removes a card set from the database using its ID.")
