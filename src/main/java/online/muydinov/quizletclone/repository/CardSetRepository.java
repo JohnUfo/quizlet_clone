@@ -15,16 +15,18 @@ public interface CardSetRepository extends JpaRepository<CardSet, Long> {
             "c.id, c.name, c.isPublic, c.firstLanguage, c.secondLanguage, " +
             "c.creator.id, c.creator.username, " +
             "CASE " +
-            "   WHEN c.creator.id = :currentUserId THEN 'OWNER' " + // Ensure the user sees their own sets
-            "   WHEN :currentUserId IN (SELECT u.id FROM c.approvedUsers u) THEN 'ACCESSIBLE' " +
-            "   WHEN ar.status = 'PENDING' THEN 'PENDING' " +
-            "   WHEN ar.status = 'DECLINED' THEN 'DECLINED' " +
-            "   ELSE 'PUBLIC' " +
+            "   WHEN c.creator.id = :currentUserId THEN 'OWNER' " + // Current user is the creator
+            "   WHEN :currentUserId IN (SELECT u.id FROM c.approvedUsers u) THEN 'ACCESSIBLE' " + // Current user has access
+            "   WHEN ar.status = 'PENDING' THEN 'PENDING' " + // Current user has a pending request
+            "   WHEN ar.status = 'DECLINED' THEN 'DECLINED' " + // Current user's request was declined
+            "   ELSE 'PUBLIC' " + // Card set is public
             "END) " +
             "FROM CardSet c " +
             "LEFT JOIN AccessRequest ar ON ar.cardSet.id = c.id AND ar.requester.id = :currentUserId " +
-            "WHERE c.isPublic = true OR c.creator.id = :currentUserId " +
-            "OR :currentUserId IN (SELECT u.id FROM c.approvedUsers u) OR ar IS NOT NULL")
+            "WHERE c.creator.id = :currentUserId " + // Include card sets created by the current user
+            "OR c.isPublic = true " + // Include public card sets
+            "OR :currentUserId IN (SELECT u.id FROM c.approvedUsers u) " + // Include card sets where the current user is approved
+            "OR ar IS NOT NULL") // Include card sets where the current user has a pending or declined request
     List<CardSetDTO> findAllPublicAndAccessibleCardsets(@Param("currentUserId") Long currentUserId);
 
     @Query("SELECT c FROM CardSet c WHERE c.id = :setId AND c.creator.username = :username")
@@ -33,4 +35,22 @@ public interface CardSetRepository extends JpaRepository<CardSet, Long> {
     @Query("SELECT c.creator.username FROM CardSet c WHERE c.id = :cardSetId")
     Optional<String> findOwnerUsernameByCardSetId(@Param("cardSetId") Long cardSetId);
 
+    @Query("SELECT new online.muydinov.quizletclone.dto.CardSetDTO(" +
+            "c.id, c.name, c.isPublic, c.firstLanguage, c.secondLanguage, " +
+            "c.creator.id, c.creator.username, " +
+            "CASE " +
+            "   WHEN c.creator.id = :currentUserId THEN 'OWNER' " + // Current user is the creator
+            "   WHEN :currentUserId IN (SELECT u.id FROM c.approvedUsers u) THEN 'ACCESSIBLE' " + // Current user has access
+            "   WHEN ar.status = 'PENDING' THEN 'PENDING' " + // Current user has a pending request
+            "   WHEN ar.status = 'DECLINED' THEN 'DECLINED' " + // Current user's request was declined
+            "   ELSE 'PUBLIC' " + // Card set is public
+            "END) " +
+            "FROM CardSet c " +
+            "LEFT JOIN AccessRequest ar ON ar.cardSet.id = c.id AND ar.requester.id = :currentUserId " +
+            "WHERE c.id = :cardSetId AND " + // Filter by cardSetId
+            "(c.creator.id = :currentUserId " + // Include card sets created by the current user
+            "OR c.isPublic = true " + // Include public card sets
+            "OR :currentUserId IN (SELECT u.id FROM c.approvedUsers u) " + // Include card sets where the current user is approved
+            "OR ar IS NOT NULL)") // Include card sets where the current user has a pending or declined request
+    CardSetDTO findPublicAndAccessibleCardsets(@Param("cardSetId") Long cardSetId, @Param("currentUserId") Long currentUserId);
 }

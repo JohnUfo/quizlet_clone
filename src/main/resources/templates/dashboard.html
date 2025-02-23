@@ -15,7 +15,6 @@
             display: flex;
         }
 
-        /* Sidebar Styles */
         .sidebar {
             width: 250px;
             background: rgba(255, 255, 255, 0.1);
@@ -49,7 +48,6 @@
             color: white;
         }
 
-        /* Main Content Styles */
         .main-content {
             flex: 1;
             padding: 20px;
@@ -179,7 +177,6 @@
             left: 100%;
         }
 
-        /* MODAL STYLING */
         .modal {
             display: none;
             position: fixed;
@@ -321,31 +318,23 @@
         .notification-actions button:hover {
             transform: scale(1.05);
         }
+
+        .small-btn {
+            padding: 8px 16px;
+            font-size: 14px;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
-
-<!-- Sidebar -->
 <div class="sidebar">
     <button class="active" onclick="navigate('home')">🏠 Home</button>
     <button onclick="navigate('library')">📚 Your Library</button>
     <button onclick="navigate('notifications')">🔔 Notifications</button>
 </div>
-
-<!-- Main Content -->
 <div class="main-content">
-    <div class="container">
-        <!-- Header Section for Buttons -->
-        <div class="header">
-            <!-- Add Card Set button will be dynamically added/removed based on the page -->
-            <!-- Logout button will only appear on the Home page -->
-        </div>
-
-        <!-- Content will be dynamically loaded here -->
-    </div>
+    <div class="container"></div>
 </div>
-
-<!-- Modal -->
 <div id="cardSetModal" class="modal">
     <div class="modal-content">
         <h3>Create New Card Set</h3>
@@ -359,73 +348,107 @@
                 <span class="slider"></span>
             </label>
         </div>
-
         <button class="btn" onclick="createCardSet()">Create</button>
         <button class="logout-btn" onclick="closeModal()">Cancel</button>
     </div>
 </div>
-
 <script>
     let cardsets = [];
 
-    // Fetch all card sets (including those the user doesn't have access to)
+    async function createCardSet() {
+        const token = localStorage.getItem('jwt');
+        if (!token) {
+            alert("You are not logged in!");
+            return;
+        }
+        const setName = document.getElementById('setName').value.trim();
+        const firstLanguage = document.getElementById('firstLanguage').value;
+        const secondLanguage = document.getElementById('secondLanguage').value;
+        const isPublic = document.getElementById('isPublic').checked;
+        if (!setName) {
+            alert("Card set name cannot be empty!");
+            return;
+        }
+        const newCardSet = {
+            name: setName,
+            isPublic: isPublic,
+            firstLanguage: firstLanguage,
+            secondLanguage: secondLanguage
+        };
+        try {
+            const response = await fetch('/cardsets', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(newCardSet)
+            });
+            if (!response.ok) {
+                throw new Error("Failed to create card set");
+            }
+            closeModal();
+            renderLibraryCardSets();
+        } catch (error) {
+            console.error(error);
+            alert("Error creating card set");
+        }
+    }
+
     async function fetchAllCardSets() {
         const token = localStorage.getItem('jwt');
         if (!token) {
-            window.location.href = '/login.html';
+            window.location.href = '/login';
             return;
         }
-
         const response = await fetch('/cardsets/all', {
             headers: { 'Authorization': 'Bearer ' + token }
         });
-
         if (response.ok) {
-            return await response.json();
+            const allCardSets = await response.json();
+            console.log("Data received from backend:", allCardSets); // Log the data
+            return allCardSets;
         } else {
             console.error('Error fetching all card sets');
             return [];
         }
     }
 
-    // Fetch card sets the user has access to
     async function fetchCardSets() {
         const token = localStorage.getItem('jwt');
         if (!token) {
-            window.location.href = '/login.html';
+            window.location.href = '/login';
             return;
         }
-
-        const response = await fetch('/cardsets/my', {
+        const response = await fetch('/cardsets/all', {
             headers: { 'Authorization': 'Bearer ' + token }
         });
-
         if (response.ok) {
             return await response.json();
         } else {
-            console.error('Error fetching user card sets');
+            console.error('Error fetching card sets');
             return [];
         }
     }
 
-    // Fetch pending access requests
     async function fetchPendingRequests() {
         const token = localStorage.getItem('jwt');
         if (!token) {
-            window.location.href = '/login.html';
+            window.location.href = '/login';
             return [];
         }
-
-        // Fetch the user's card sets
-        const userCardSets = await fetchCardSets();
-
-        // Fetch pending requests for each card set
+        const username = localStorage.getItem('username');
+        if (!username) {
+            console.error('Username not found');
+            return [];
+        }
+        const allCardSets = await fetchCardSets();
+        const userCardSets = allCardSets.filter(set => set.creatorName === username);
         const allRequests = [];
         for (const cardSet of userCardSets) {
-            const response = await fetch(`/cardsets/${cardSet.id}/requests`, {
+            const response = await fetch(`/request/${cardSet.id}/requests`, {
                 headers: { 'Authorization': 'Bearer ' + token }
             });
-
             if (response.ok) {
                 const requests = await response.json();
                 allRequests.push(...requests);
@@ -433,176 +456,46 @@
                 console.error(`Error fetching requests for card set ${cardSet.id}`);
             }
         }
-
         return allRequests;
     }
 
-    // Render all card sets on the Home page
-    async function renderAllCardSets() {
-        const container = document.querySelector('.main-content .container');
-        container.innerHTML = `
-        <div class="header">
-            <button class="logout-btn" onclick="logout()">Logout</button>
-        </div>
-        <h2>🏠 Home</h2>
-        <div class="search-container">
-            <input type="text" id="searchBar" class="search-box" placeholder="🔍 Search all card sets..." onkeyup="filterAllCardSets()">
-        </div>
-        <div id="all-cardsets" class="card-grid">Loading...</div>
-    `;
-
-        const allCardSets = await fetchAllCardSets();
-        const userCardSets = await fetchCardSets();
-
-        const allCardSetsContainer = document.getElementById('all-cardsets');
-        allCardSetsContainer.innerHTML = '';
-
-        allCardSets.forEach(set => {
-            const hasAccess = userCardSets.some(userSet => userSet.id === set.id);
-
-            const cardSetHTML = `
-            <div class="cardset">
-                <h3>${set.name}</h3>
-                ${hasAccess ?
-                `<button class="btn" onclick="openCardSet('${set.id}')">Open</button>` :
-                `<button class="btn" onclick="requestAccess('${set.id}')">Request Access</button>`
-            }
-            </div>
-        `;
-            allCardSetsContainer.innerHTML += cardSetHTML;
-        });
-    }
-
-    async function requestAccess(cardSetId) {
-        const token = localStorage.getItem('jwt');
-        if (!token) {
-            alert("You are not logged in!");
-            return;
-        }
-
-        try {
-            const response = await fetch(`/cardsets/${cardSetId}/request-access`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': 'Bearer ' + token,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error("Failed to request access");
-            }
-
-            const result = await response.text();
-            alert(result);
-            renderAllCardSets(); // Refresh the list
-        } catch (error) {
-            console.error(error);
-            alert("Error requesting access");
-        }
-    }
-
-    // Render card sets in the Library page
-    async function renderLibraryCardSets() {
-        const container = document.querySelector('.main-content .container');
-        container.innerHTML = `
-            <div class="header">
-                <button class="btn" onclick="openModal()">➕ Add Card Set</button>
-            </div>
-            <h2>📚 Your Library</h2>
-            <div class="search-container">
-                <input type="text" id="searchBar" class="search-box" placeholder="🔍 Search your card sets..." onkeyup="filterCardSets()">
-            </div>
-            <div id="cardsets" class="card-grid">Loading...</div>
-        `;
-
-        const userCardSets = await fetchCardSets();
-        cardsets = userCardSets; // Update the global cardsets variable
-        renderCardSets(userCardSets);
-    }
-
-    // Render Notifications page
-    async function renderNotifications() {
-        const container = document.querySelector('.main-content .container');
-        container.innerHTML = `
-        <div class="header">
-            <h2>🔔 Notifications</h2>
-        </div>
-        <div id="notifications" class="card-grid">Loading...</div>
-    `;
-
-        const pendingRequests = await fetchPendingRequests();
-        const notificationsContainer = document.getElementById('notifications');
-        notificationsContainer.innerHTML = '';
-
-        if (pendingRequests.length === 0) {
-            notificationsContainer.innerHTML = `<p>You have no new notifications.</p>`;
-            return;
-        }
-
-        pendingRequests.forEach(request => {
-            const notificationHTML = `
-            <div class="notification-item">
-                <p>User <strong>${request.requesterUsername}</strong> requested access to <strong>${request.cardSetName}</strong>.</p>
-                <div class="notification-actions">
-                    <button class="accept" onclick="handleRequest('${request.id}', '${request.cardSetId}', 'accept')">Accept</button>
-                    <button class="reject" onclick="handleRequest('${request.id}', '${request.cardSetId}', 'reject')">Reject</button>
-                </div>
-            </div>
-        `;
-            notificationsContainer.innerHTML += notificationHTML;
-        });
-    }
-
-    // Handle accept/reject request
     async function handleRequest(requestId, cardSetId, action) {
         const token = localStorage.getItem('jwt');
         if (!token) {
             alert("You are not logged in!");
             return;
         }
-
         try {
-            // Send the approve parameter as a query parameter
-            const response = await fetch(`/cardsets/${cardSetId}/requests/${requestId}?approve=${action === 'accept'}`, {
+            const response = await fetch(`/request/${cardSetId}/requests/${requestId}?approve=${action === 'accept'}`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': 'Bearer ' + token,
                     'Content-Type': 'application/json'
                 }
             });
-
             if (!response.ok) {
                 throw new Error("Failed to handle request");
             }
-
             const result = await response.json();
-            console.log(result); // Log the backend response
-
-            // Display a success message
-            alert(result.message); // Show the message from the backend
-
-            // Refresh the notifications list
+            alert(result.message);
             renderNotifications();
-
-            // Refresh the card sets on the Home page if the user is on the Home page
-            if (window.location.hash === '#home') {
-                renderAllCardSets();
-            }
         } catch (error) {
             console.error(error);
             alert("Error handling request");
         }
     }
 
-    // Navigate between pages
+    function logout() {
+        localStorage.removeItem('jwt');
+        localStorage.removeItem('username');
+        window.location.href = '/login';
+    }
+
     function navigate(page) {
         const buttons = document.querySelectorAll('.sidebar button');
         buttons.forEach(button => button.classList.remove('active'));
-
         const activeButton = document.querySelector(`.sidebar button[onclick="navigate('${page}')"]`);
         activeButton.classList.add('active');
-
         switch (page) {
             case 'home':
                 renderAllCardSets();
@@ -618,24 +511,6 @@
         }
     }
 
-    // Render card sets
-    function renderCardSets(list) {
-        const container = document.getElementById('cardsets');
-        if (!container) {
-            console.error('Cardsets container not found');
-            return;
-        }
-        container.innerHTML = '';
-        list.forEach(set => {
-            container.innerHTML += `
-                <div class="cardset" onclick="openCardSet('${set.id}')">
-                    <h3>${set.name}</h3>
-                </div>
-            `;
-        });
-    }
-
-    // Open a specific card set
     async function openCardSet(cardSetId) {
         const token = localStorage.getItem('jwt');
         if (!token) {
@@ -652,77 +527,22 @@
                 throw new Error("You do not have access to this card set");
             }
 
-            window.location.href = `/cards?cardSetId=${cardSetId}`;
+            // Navigate to another HTML page (replace with your desired URL)
+            window.location.href = `/cardset.html?cardSetId=${cardSetId}`;
         } catch (error) {
             console.error(error);
             alert(error.message);
         }
     }
 
-    // Open the modal for creating a new card set
     function openModal() {
         document.getElementById('cardSetModal').style.display = 'flex';
     }
 
-    // Close the modal
     function closeModal() {
         document.getElementById('cardSetModal').style.display = 'none';
     }
 
-    // Create a new card set
-    async function createCardSet() {
-        const token = localStorage.getItem('jwt');
-        if (!token) {
-            alert("You are not logged in!");
-            return;
-        }
-
-        const setName = document.getElementById('setName').value.trim();
-        const firstLanguage = document.getElementById('firstLanguage').value.toUpperCase();
-        const secondLanguage = document.getElementById('secondLanguage').value.toUpperCase();
-        const isPublic = document.getElementById('isPublic').checked;
-
-        if (!setName) {
-            alert("Card set name cannot be empty!");
-            return;
-        }
-
-        const newCardSet = {
-            name: setName,
-            isPublic: isPublic,
-            firstLanguage: firstLanguage,
-            secondLanguage: secondLanguage
-        };
-
-        try {
-            const response = await fetch('/cardsets', {
-                method: 'POST',
-                headers: {
-                    'Authorization': 'Bearer ' + token,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(newCardSet)
-            });
-
-            if (!response.ok) {
-                throw new Error("Failed to create card set");
-            }
-
-            closeModal();
-            fetchCardSets();
-        } catch (error) {
-            console.error(error);
-            alert("Error creating card set");
-        }
-    }
-
-    // Logout the user
-    function logout() {
-        localStorage.removeItem('jwt');
-        window.location.href = '/login';
-    }
-
-    // Populate language dropdowns
     function populateLanguageDropdowns() {
         const languages = [
             "English", "Spanish", "French", "German", "Russian", "Chinese", "Arabic", "Italian",
@@ -730,7 +550,6 @@
             "Polish", "Greek", "Romanian", "Indonesian", "Vietnamese", "Thai", "Bengali",
             "Persian", "Urdu", "Hebrew", "Uzbek"
         ];
-
         const firstLangSelect = document.getElementById('firstLanguage');
         const secondLangSelect = document.getElementById('secondLanguage');
         languages.forEach(lang => {
@@ -739,9 +558,140 @@
         });
     }
 
-    // Initial load
+    async function renderAllCardSets() {
+        const container = document.querySelector('.main-content .container');
+        container.innerHTML = `
+        <div class="header">
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+        <h2>🏠 Home</h2>
+        <div class="search-container">
+            <input type="text" id="searchBar" class="search-box" placeholder="🔍 Search all card sets..." onkeyup="filterAllCardSets()">
+        </div>
+        <div id="all-cardsets" class="card-grid">Loading...</div>
+    `;
+
+        const allCardSets = await fetchAllCardSets();
+        const allCardSetsContainer = document.getElementById('all-cardsets');
+        allCardSetsContainer.innerHTML = '';
+
+        allCardSets.forEach(set => {
+            let buttonHTML = '';
+
+            if (set.accessType === 'OWNER' || set.accessType === 'ACCESSIBLE') {
+                // No button, make the entire card clickable
+                buttonHTML = '';
+            } else if (set.accessType === 'PUBLIC') {
+                // Show "Send Request" button
+                buttonHTML = `<button class="btn" onclick="requestAccess('${set.id}')">Send Request</button>`;
+            } else if (set.accessType === 'PENDING') {
+                // Show disabled "PENDING" button
+                buttonHTML = `<button class="btn" disabled>PENDING</button>`;
+            } else if (set.accessType === 'DECLINED') {
+                // Show disabled "DECLINED" button and a small "Send Request Again" button
+                buttonHTML = `
+                <button class="btn" disabled>DECLINED</button>
+                <button class="btn small-btn" onclick="requestAccess('${set.id}')">Send Request Again</button>
+            `;
+            }
+
+            const cardSetHTML = `
+            <div class="cardset" ${set.accessType === 'OWNER' || set.accessType === 'ACCESSIBLE' ? `onclick="openCardSet('${set.id}')"` : ''}>
+                <h3>${set.name}</h3>
+                ${buttonHTML}
+            </div>
+        `;
+            allCardSetsContainer.innerHTML += cardSetHTML;
+        });
+    }
+
+    async function renderLibraryCardSets() {
+        const container = document.querySelector('.main-content .container');
+        container.innerHTML = `
+            <div class="header">
+                <button class="btn" onclick="openModal()">➕ Add Card Set</button>
+            </div>
+            <h2>📚 Your Library</h2>
+            <div class="search-container">
+                <input type="text" id="searchBar" class="search-box" placeholder="🔍 Search your card sets..." onkeyup="filterCardSets()">
+            </div>
+            <div id="cardsets" class="card-grid">Loading...</div>
+        `;
+        const allCardSets = await fetchCardSets();
+        const username = localStorage.getItem('username');
+        const userCardSets = allCardSets.filter(set => set.creatorName === username);
+        renderCardSets(userCardSets);
+    }
+
+    async function renderNotifications() {
+        const container = document.querySelector('.main-content .container');
+        container.innerHTML = `
+            <div class="header">
+                <h2>🔔 Notifications</h2>
+            </div>
+            <div id="notifications" class="card-grid">Loading...</div>
+        `;
+        const pendingRequests = await fetchPendingRequests();
+        const notificationsContainer = document.getElementById('notifications');
+        notificationsContainer.innerHTML = '';
+        if (pendingRequests.length === 0) {
+            notificationsContainer.innerHTML = `<p>You have no new notifications.</p>`;
+            return;
+        }
+        pendingRequests.forEach(request => {
+            const notificationHTML = `
+                <div class="notification-item">
+                    <p>User <strong>${request.requesterUsername}</strong> requested access to <strong>${request.cardSetName}</strong>.</p>
+                    <div class="notification-actions">
+                        <button class="accept" onclick="handleRequest('${request.id}', '${request.cardSetId}', 'accept')">Accept</button>
+                        <button class="reject" onclick="handleRequest('${request.id}', '${request.cardSetId}', 'reject')">Reject</button>
+                    </div>
+                </div>
+            `;
+            notificationsContainer.innerHTML += notificationHTML;
+        });
+    }
+
+    async function requestAccess(cardSetId) {
+        const token = localStorage.getItem('jwt');
+        if (!token) {
+            alert("You are not logged in!");
+            return;
+        }
+
+        try {
+            const response = await fetch(`/request/${cardSetId}/request-access`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to request access");
+            }
+
+            const result = await response.json();
+            alert(result.message); // Show the message from the backend
+
+            // Update the button to "Request Sent"
+            const cardSetElement = document.querySelector(`.cardset[onclick*="${cardSetId}"]`);
+            if (cardSetElement) {
+                const button = cardSetElement.querySelector('.btn');
+                if (button) {
+                    button.textContent = "Request Sent";
+                    button.disabled = true;
+                }
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Error requesting access");
+        }
+    }
+
     populateLanguageDropdowns();
-    navigate('home'); // Default to Home page
+    navigate('home');
 </script>
 </body>
 </html>

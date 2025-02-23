@@ -30,6 +30,13 @@ public class CardSetService {
         return cardSetRepository.findAllPublicAndAccessibleCardsets(currentUserId);
     }
 
+    public CardSetDTO getCardSetById(Long cardSetId) {
+        String username = myUserDetailsService.getUsername();
+        Long currentUserId = myUserDetailsService.getUserIdByUsername(username);
+
+        return cardSetRepository.findPublicAndAccessibleCardsets(cardSetId,currentUserId);
+    }
+
     public CardSetDTO createCardSet(CardSetDTO cardSetDTO) {
         UserDTO creatorDTO = userRepository.findUserDTOByUsername(myUserDetailsService.getUsername())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
@@ -46,7 +53,6 @@ public class CardSetService {
 
         return convertCardSetToDTO(cardSetRepository.save(cardSet),"NO");
     }
-
 
     public void deleteCardSet(Long id) {
         CardSet cardSet = findCardSetByIdAndVerifyOwner(id);
