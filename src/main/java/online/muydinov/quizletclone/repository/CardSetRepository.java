@@ -27,14 +27,10 @@ public interface CardSetRepository extends JpaRepository<CardSet, Long> {
             "OR :currentUserId IN (SELECT u.id FROM c.approvedUsers u) OR ar IS NOT NULL")
     List<CardSetDTO> findAllPublicAndAccessibleCardsets(@Param("currentUserId") Long currentUserId);
 
-    boolean existsByName(String name);
-
     @Query("SELECT c FROM CardSet c WHERE c.id = :setId AND c.creator.username = :username")
     Optional<CardSet> findByIdAndOwner(Long setId, String username);
 
     @Query("SELECT c.creator.username FROM CardSet c WHERE c.id = :cardSetId")
     Optional<String> findOwnerUsernameByCardSetId(@Param("cardSetId") Long cardSetId);
 
-    @Query("SELECT c FROM CardSet c WHERE c.creator.username = :username")
-    List<CardSet> findByOwnersUsername(@Param("username") String username);
 }

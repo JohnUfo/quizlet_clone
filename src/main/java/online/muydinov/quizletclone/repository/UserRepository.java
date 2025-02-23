@@ -13,9 +13,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     boolean existsByUsername(String username);
 
-    Long getUserIdByUsername(String username);
+    @Query("SELECT u.id FROM Users u where u.username = :username")
+    Long getUserIdByUsername(@Param("username") String username);
 
     @Query("SELECT new online.muydinov.quizletclone.dto.UserDTO(u.id, u.fullName, u.username) " +
-                "FROM Users u WHERE u.username = :username")
+            "FROM Users u WHERE u.username = :username")
     Optional<UserDTO> findUserDTOByUsername(@Param("username") String username);
 }

@@ -28,7 +28,6 @@ public class MyUserDetailsService implements UserDetailsService {
     }
 
     public Long getUserIdByUsername(String username) {
-        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return userRepository.getUserIdByUsername(userDetails.getUsername());
+        return userRepository.getUserIdByUsername(username);
     }
 }
