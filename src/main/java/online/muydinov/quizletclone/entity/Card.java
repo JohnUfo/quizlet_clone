@@ -7,6 +7,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import static jakarta.persistence.FetchType.LAZY;
+import static jakarta.persistence.GenerationType.IDENTITY;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -15,13 +18,13 @@ import lombok.NoArgsConstructor;
 public class Card {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = IDENTITY)
     private Long id;
 
     private String firstCard;
     private String secondCard;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "set_id", nullable = false)
     @JsonBackReference
     private CardSet cardSet;

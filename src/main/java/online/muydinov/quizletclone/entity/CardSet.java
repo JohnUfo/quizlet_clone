@@ -6,10 +6,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import online.muydinov.quizletclone.enums.Language;
 
 import java.util.List;
 import java.util.Set;
+
+import static jakarta.persistence.CascadeType.*;
+import static jakarta.persistence.FetchType.LAZY;
+import static jakarta.persistence.GenerationType.IDENTITY;
 
 @Data
 @AllArgsConstructor
@@ -19,20 +22,20 @@ import java.util.Set;
 public class CardSet {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = IDENTITY)
     private Long id;
 
     private String name;
 
-    @OneToMany(mappedBy = "cardSet", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "cardSet", cascade = ALL, orphanRemoval = true, fetch = LAZY)
     @JsonManagedReference
     private List<Card> cards;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "creator_id", nullable = false)
     private User creator;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE})
+    @ManyToMany(fetch = LAZY, cascade = {PERSIST, MERGE, REMOVE})
     @JoinTable(
             name = "set_access_requests",
             joinColumns = @JoinColumn(name = "set_id"),
@@ -41,7 +44,6 @@ public class CardSet {
     private Set<User> approvedUsers;
 
     private boolean isPublic;
-
 
     @Column(nullable = false)
     private String firstLanguage;

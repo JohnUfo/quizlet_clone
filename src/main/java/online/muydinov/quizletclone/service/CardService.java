@@ -28,11 +28,6 @@ public class CardService {
         cardRepository.save(card);
     }
 
-    public Card getCardById(Long cardId) {
-        return cardRepository.findById(cardId)
-                .orElseThrow(() -> new CardNotFoundException("Card not found"));
-    }
-
     public void deleteCardById(Long cardId) {
         if (!cardRepository.existsById(cardId)) {
             throw new CardNotFoundException("Card not found");

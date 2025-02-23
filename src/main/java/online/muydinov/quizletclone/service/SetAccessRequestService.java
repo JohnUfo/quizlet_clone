@@ -7,7 +7,6 @@ import online.muydinov.quizletclone.dto.SetAccessRequestDTO;
 import online.muydinov.quizletclone.entity.CardSet;
 import online.muydinov.quizletclone.entity.SetAccessRequest;
 import online.muydinov.quizletclone.entity.User;
-import online.muydinov.quizletclone.enums.RequestStatus;
 import online.muydinov.quizletclone.exceptions.CardSetNotFoundException;
 import online.muydinov.quizletclone.exceptions.UnauthorizedAccessException;
 import online.muydinov.quizletclone.repository.CardSetRepository;
@@ -26,7 +25,6 @@ public class SetAccessRequestService {
     private final SetAccessRequestRepository accessRequestRepository;
     private final CardSetRepository cardSetRepository;
     private final UserRepository userRepository;
-    private final MyUserDetailsService myUserDetailsService;
 
     public String requestAccess(Long setId) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -46,12 +44,14 @@ public class SetAccessRequestService {
         }
 
         accessRequestRepository.findByRequesterAndCardSet(requester, cardSet)
-                .ifPresent(request -> { throw new DuplicateRequestException("Access request already sent!"); });
+                .ifPresent(request -> {
+                    throw new DuplicateRequestException("Access request already sent!");
+                });
 
         SetAccessRequest request = new SetAccessRequest();
         request.setRequester(requester);
         request.setCardSet(cardSet);
-        request.setStatus(RequestStatus.PENDING);
+        request.setStatus("PENDING");
         accessRequestRepository.save(request);
 
         return "Request sent successfully!";
@@ -84,11 +84,11 @@ public class SetAccessRequestService {
 
         // Update the request status
         if (approve) {
-            request.setStatus(RequestStatus.APPROVED);
+            request.setStatus("APPROVED");
             cardSet.getApprovedUsers().add(request.getRequester()); // Add the user to the approved list
             cardSetRepository.save(cardSet);
         } else {
-            request.setStatus(RequestStatus.REJECTED);
+            request.setStatus("REJECTED");
         }
 
         accessRequestRepository.save(request);
@@ -106,7 +106,7 @@ public class SetAccessRequestService {
         }
 
         // Fetch pending requests for the card set
-        return accessRequestRepository.findPendingRequestsByCardSetId(setId, RequestStatus.PENDING)
+        return accessRequestRepository.findPendingRequestsByCardSetId(setId, "PENDING")
                 .stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());

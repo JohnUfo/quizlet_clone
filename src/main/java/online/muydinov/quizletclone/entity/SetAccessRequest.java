@@ -1,8 +1,11 @@
 package online.muydinov.quizletclone.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
-import online.muydinov.quizletclone.enums.RequestStatus;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import static jakarta.persistence.GenerationType.IDENTITY;
 
 @Data
 @AllArgsConstructor
@@ -11,7 +14,7 @@ import online.muydinov.quizletclone.enums.RequestStatus;
 public class SetAccessRequest {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = IDENTITY)
     private Long id;
 
     @ManyToOne
@@ -22,7 +25,7 @@ public class SetAccessRequest {
     @JoinColumn(name = "set_id", nullable = false)
     private CardSet cardSet;
 
-    @Enumerated(EnumType.STRING)
-    private RequestStatus status;
+    @Column(nullable = false)
+    private String status;
 
 }

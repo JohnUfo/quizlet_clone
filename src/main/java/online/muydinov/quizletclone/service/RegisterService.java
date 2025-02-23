@@ -16,7 +16,7 @@ public class RegisterService {
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
-    public User register(RegisterRequestDTO registerRequestDTO) {
+    public void register(RegisterRequestDTO registerRequestDTO) {
         if (registerRequestDTO.getPassword() == null || registerRequestDTO.getPassword().isEmpty()) {
             throw new IllegalArgumentException("Password cannot be null or empty");
         }
@@ -24,6 +24,6 @@ public class RegisterService {
         user.setUsername(registerRequestDTO.getUsername());
         user.setPassword(passwordEncoder.encode(registerRequestDTO.getPassword()));
         user.setFullName(registerRequestDTO.getFullName());
-        return userRepository.save(user);
+        userRepository.save(user);
     }
 }
