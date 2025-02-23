@@ -525,11 +525,11 @@
     async function renderNotifications() {
         const container = document.querySelector('.main-content .container');
         container.innerHTML = `
-            <div class="header">
-                <h2>🔔 Notifications</h2>
-            </div>
-            <div id="notifications" class="card-grid">Loading...</div>
-        `;
+        <div class="header">
+            <h2>🔔 Notifications</h2>
+        </div>
+        <div id="notifications" class="card-grid">Loading...</div>
+    `;
 
         const pendingRequests = await fetchPendingRequests();
         const notificationsContainer = document.getElementById('notifications');
@@ -542,14 +542,14 @@
 
         pendingRequests.forEach(request => {
             const notificationHTML = `
-        <div class="notification-item">
-            <p>User <strong>${request.requesterUsername}</strong> requested access to <strong>${request.cardSetName}</strong>.</p>
-            <div class="notification-actions">
-                <button class="accept" onclick="handleRequest('${request.id}', '${request.cardSetId}', 'accept')">Accept</button>
-                <button class="reject" onclick="handleRequest('${request.id}', '${request.cardSetId}', 'reject')">Reject</button>
+            <div class="notification-item">
+                <p>User <strong>${request.requesterUsername}</strong> requested access to <strong>${request.cardSetName}</strong>.</p>
+                <div class="notification-actions">
+                    <button class="accept" onclick="handleRequest('${request.id}', '${request.cardSetId}', 'accept')">Accept</button>
+                    <button class="reject" onclick="handleRequest('${request.id}', '${request.cardSetId}', 'reject')">Reject</button>
+                </div>
             </div>
-        </div>
-    `;
+        `;
             notificationsContainer.innerHTML += notificationHTML;
         });
     }
@@ -576,8 +576,19 @@
                 throw new Error("Failed to handle request");
             }
 
+            const result = await response.json();
+            console.log(result); // Log the backend response
+
+            // Display a success message
+            alert(result.message); // Show the message from the backend
+
             // Refresh the notifications list
             renderNotifications();
+
+            // Refresh the card sets on the Home page if the user is on the Home page
+            if (window.location.hash === '#home') {
+                renderAllCardSets();
+            }
         } catch (error) {
             console.error(error);
             alert("Error handling request");

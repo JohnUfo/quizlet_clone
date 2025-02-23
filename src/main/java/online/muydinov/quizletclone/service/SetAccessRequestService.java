@@ -59,6 +59,10 @@ public class SetAccessRequestService {
 
     @Transactional
     public String respondToRequest(Long cardSetId, Long requestId, boolean approve) {
+        System.out.println("Card Set ID: " + cardSetId);
+        System.out.println("Request ID: " + requestId);
+        System.out.println("Approve: " + approve);
+
         // Validate cardSetId
         CardSet cardSet = cardSetRepository.findById(cardSetId)
                 .orElseThrow(() -> new CardSetNotFoundException("Card Set not found"));
@@ -81,7 +85,7 @@ public class SetAccessRequestService {
         // Update the request status
         if (approve) {
             request.setStatus(RequestStatus.APPROVED);
-            cardSet.getApprovedUsers().add(request.getRequester());
+            cardSet.getApprovedUsers().add(request.getRequester()); // Add the user to the approved list
             cardSetRepository.save(cardSet);
         } else {
             request.setStatus(RequestStatus.REJECTED);

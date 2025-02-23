@@ -13,7 +13,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/cardsets")
@@ -94,10 +96,13 @@ public class CardSetController {
 
     @Operation(summary = "Respond to Access Request", description = "Approves or rejects a user's access request to a card set.")
     @PutMapping("/{cardSetId}/requests/{requestId}")
-    public ResponseEntity<String> respondToRequest(
+    public ResponseEntity<Map<String, String>> respondToRequest(
             @PathVariable Long cardSetId,
             @PathVariable Long requestId,
-            @RequestParam boolean approve) { // Ensure this is @RequestParam
-        return ResponseEntity.ok(setAccessRequestService.respondToRequest(cardSetId, requestId, approve));
+            @RequestParam boolean approve) {
+        String result = setAccessRequestService.respondToRequest(cardSetId, requestId, approve);
+        Map<String, String> response = new HashMap<>();
+        response.put("message", result);
+        return ResponseEntity.ok(response);
     }
 }
