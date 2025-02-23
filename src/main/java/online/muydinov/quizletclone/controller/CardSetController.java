@@ -1,31 +1,26 @@
 package online.muydinov.quizletclone.controller;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import online.muydinov.quizletclone.dto.CardSetDTO;
-import online.muydinov.quizletclone.dto.CardSetWithCardsDTO;
-import online.muydinov.quizletclone.dto.SetAccessRequestDTO;
+import online.muydinov.quizletclone.service.AccessRequestService;
 import online.muydinov.quizletclone.service.CardSetService;
 import online.muydinov.quizletclone.service.JWTService;
-import online.muydinov.quizletclone.service.SetAccessRequestService;
+import online.muydinov.quizletclone.service.MyUserDetailsService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/cardsets")
 @RequiredArgsConstructor
-@Tag(name = "Card Set API", description = "Endpoints for managing card sets")
 public class CardSetController {
 
     private final CardSetService cardSetService;
-    private final SetAccessRequestService setAccessRequestService;
+    private final AccessRequestService AccessRequestService;
     private final JWTService jwtService;
+    private final MyUserDetailsService myUserDetailsService;
 
     @GetMapping("/all")
     public ResponseEntity<List<CardSetDTO>> getAllCardSets() {
@@ -33,76 +28,46 @@ public class CardSetController {
         return ResponseEntity.ok(allCardSets);
     }
 
-    @Operation(summary = "Create a New Card Set", description = "Adds a new card set to the system.")
     @PostMapping
     public ResponseEntity<CardSetDTO> createCardSet(@RequestBody CardSetDTO cardSetDTO) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(cardSetService.createCardSet(cardSetDTO));
     }
-
-    @GetMapping("/my")
-    public ResponseEntity<List<CardSetDTO>> getMyCardSets(@RequestHeader("Authorization") String token) {
-        if (token.startsWith("Bearer ")) {
-            token = token.substring(7);
-        }
-        String username = jwtService.extractUserName(token);
-        return ResponseEntity.ok(cardSetService.getCardSetsByUsername(username));
-    }
-
-    @Operation(summary = "Get Card Set by ID", description = "Fetches details of a specific card set using its ID.")
-    @GetMapping("/{cardSetId}")
-    public ResponseEntity<CardSetWithCardsDTO> getCardSetById(@PathVariable Long cardSetId, @RequestHeader("Authorization") String token) {
-        if (token.startsWith("Bearer ")) {
-            token = token.substring(7);
-        }
-        String username = jwtService.extractUserName(token);
-        return ResponseEntity.ok(cardSetService.getCardSetById(cardSetId, username));
-    }
-
-    @Operation(summary = "Delete a Card Set", description = "Removes a card set from the database using its ID.")
-    @DeleteMapping("/{cardSetId}")
-    public ResponseEntity<Void> deleteCardSet(@PathVariable Long cardSetId) {
-        cardSetService.deleteCardSet(cardSetId);
-        return ResponseEntity.noContent().build();
-    }
-
-    @Operation(summary = "Update a Card Set", description = "Modifies an existing card set's details.")
-    @PutMapping("/{cardSetId}")
-    public ResponseEntity<CardSetDTO> updateCardSet(@PathVariable Long cardSetId, @RequestBody CardSetDTO cardSetDTO) {
-        return ResponseEntity.ok(cardSetService.updateCardSet(cardSetId, cardSetDTO));
-    }
-
-    // ACCESS REQUESTS
-
-    @Operation(summary = "Request Access to a Card Set", description = "Requests access to a private card set.")
-    @PostMapping("/{cardSetId}/request-access")
-    public ResponseEntity<String> requestAccess(@PathVariable Long cardSetId) {
-        return ResponseEntity.ok(setAccessRequestService.requestAccess(cardSetId));
-    }
-
-    @Operation(summary = "Get Pending Access Requests", description = "Retrieves all pending access requests for a specific card set.")
-    @GetMapping("/{cardSetId}/requests")
-    public ResponseEntity<List<SetAccessRequestDTO>> getPendingRequests(
-            @PathVariable Long cardSetId,
-            @RequestHeader("Authorization") String token) {
-        if (token.startsWith("Bearer ")) {
-            token = token.substring(7);
-        }
-        String username = jwtService.extractUserName(token); // Extract username from JWT
-
-        List<SetAccessRequestDTO> pendingRequests = setAccessRequestService.getPendingRequests(cardSetId, username);
-        return ResponseEntity.ok(pendingRequests);
-    }
-
-    @Operation(summary = "Respond to Access Request", description = "Approves or rejects a user's access request to a card set.")
-    @PutMapping("/{cardSetId}/requests/{requestId}")
-    public ResponseEntity<Map<String, String>> respondToRequest(
-            @PathVariable Long cardSetId,
-            @PathVariable Long requestId,
-            @RequestParam boolean approve) {
-        String result = setAccessRequestService.respondToRequest(cardSetId, requestId, approve);
-        Map<String, String> response = new HashMap<>();
-        response.put("message", result);
-        return ResponseEntity.ok(response);
-    }
+//
+//    @GetMapping("/{cardSetId}")
+//    public ResponseEntity<CardSetDTO> getCardSetById(@PathVariable Long cardSetId) {
+//        return ResponseEntity.ok(cardSetService.getCardSetById(cardSetId, myUserDetailsService.getUsername()));
+//    }
+//
+//    @DeleteMapping("/{cardSetId}")
+//    public ResponseEntity<Void> deleteCardSet(@PathVariable Long cardSetId) {
+//        cardSetService.deleteCardSet(cardSetId);
+//        return ResponseEntity.noContent().build();
+//    }
+//
+//    @PutMapping("/{cardSetId}")
+//    public ResponseEntity<CardSetDTO> updateCardSet(@PathVariable Long cardSetId, @RequestBody CardSetDTO cardSetDTO) {
+//        return ResponseEntity.ok(cardSetService.updateCardSet(cardSetId, cardSetDTO));
+//    }
+//
+//    @PostMapping("/{cardSetId}/request-access")
+//    public ResponseEntity<String> requestAccess(@PathVariable Long cardSetId) {
+//        return ResponseEntity.ok(AccessRequestService.requestAccess(cardSetId));
+//    }
+//
+//    @GetMapping("/{cardSetId}/requests")
+//    public ResponseEntity<List<AccessRequestDTO>> getPendingRequests(
+//            @PathVariable Long cardSetId) {
+//        List<AccessRequestDTO> pendingRequests = AccessRequestService.getPendingRequests(cardSetId, myUserDetailsService.getUsername());
+//        return ResponseEntity.ok(pendingRequests);
+//    }
+//
+//    @PutMapping("/{cardSetId}/requests/{requestId}")
+//    public ResponseEntity<Response> respondToRequest(
+//            @PathVariable Long cardSetId,
+//            @PathVariable Long requestId,
+//            @RequestParam boolean approve) {
+//        Response response = AccessRequestService.respondToRequest(cardSetId, requestId, approve);
+//        return ResponseEntity.ok(response);
+//    }
 }

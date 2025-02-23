@@ -11,7 +11,7 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-public class SetAccessRequest {
+public class AccessRequest {
 
     @Id
     @GeneratedValue(strategy = IDENTITY)

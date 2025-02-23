@@ -10,11 +10,13 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 import java.util.Set;
 
+import static jakarta.persistence.CascadeType.ALL;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Entity(name = "users")
+@Entity(name = "Users")
 public class User {
 
     @Id
@@ -29,7 +31,7 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @OneToMany(mappedBy = "creator", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "creator", cascade = ALL, orphanRemoval = true)
     @JsonIgnore
     private List<CardSet> createdSets;
 

@@ -35,14 +35,15 @@ public class CardSet {
     @JoinColumn(name = "creator_id", nullable = false)
     private User creator;
 
-    @ManyToMany(fetch = LAZY, cascade = {PERSIST, MERGE, REMOVE})
+    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(
-            name = "set_access_requests",
+            name = "accessible_sets",
             joinColumns = @JoinColumn(name = "set_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     private Set<User> approvedUsers;
 
+    @Column(nullable = false)
     private boolean isPublic;
 
     @Column(nullable = false)

@@ -2,10 +2,9 @@ package online.muydinov.quizletclone.service;
 
 import lombok.RequiredArgsConstructor;
 import online.muydinov.quizletclone.dto.CardSetDTO;
-import online.muydinov.quizletclone.dto.CardSetWithCardsDTO;
+import online.muydinov.quizletclone.dto.UserDTO;
 import online.muydinov.quizletclone.entity.CardSet;
 import online.muydinov.quizletclone.entity.User;
-import online.muydinov.quizletclone.exceptions.CardSetNotFoundException;
 import online.muydinov.quizletclone.exceptions.UnauthorizedAccessException;
 import online.muydinov.quizletclone.exceptions.UserNotFoundException;
 import online.muydinov.quizletclone.repository.CardSetRepository;
@@ -13,7 +12,6 @@ import online.muydinov.quizletclone.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -21,14 +19,23 @@ import java.util.List;
 @Transactional
 public class CardSetService {
 
-    private final UserRepository userRepository;
-    private final MyUserDetailsService myUserDetailsService;
     private final CardSetRepository cardSetRepository;
-    private final CardService cardService;
+    private final MyUserDetailsService myUserDetailsService;
+    private final UserRepository userRepository;
+
+    public List<CardSetDTO> getAllCardSets() {
+        String username = myUserDetailsService.getUsername();
+        Long currentUserId = myUserDetailsService.getUserIdByUsername(username);
+
+        return cardSetRepository.findAllPublicAndAccessibleCardsets(currentUserId);
+    }
 
     public CardSetDTO createCardSet(CardSetDTO cardSetDTO) {
-        User creator = userRepository.findByUsername(myUserDetailsService.getUsername())
+        UserDTO creatorDTO = userRepository.findUserDTOByUsername(myUserDetailsService.getUsername())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        User creator = new User();
+        creator.setId(creatorDTO.getId());
 
         CardSet cardSet = new CardSet();
         cardSet.setName(cardSetDTO.getName());
@@ -37,19 +44,9 @@ public class CardSetService {
         cardSet.setFirstLanguage(cardSetDTO.getFirstLanguage());
         cardSet.setSecondLanguage(cardSetDTO.getSecondLanguage());
 
-        return convertCardSetToDTO(cardSetRepository.save(cardSet));
+        return convertCardSetToDTO(cardSetRepository.save(cardSet),"NO");
     }
 
-    public CardSetWithCardsDTO getCardSetById(Long id, String username) {
-        CardSet cardSet = cardSetRepository.findById(id)
-                .orElseThrow(() -> new CardSetNotFoundException("Card Set not found"));
-
-        if (!hasAccessToCardSet(id, username)) {
-            throw new UnauthorizedAccessException("You do not have access to this card set");
-        }
-
-        return convertCardSetWithCardsToDTO(cardSet);
-    }
 
     public void deleteCardSet(Long id) {
         CardSet cardSet = findCardSetByIdAndVerifyOwner(id);
@@ -64,7 +61,7 @@ public class CardSetService {
         cardSet.setFirstLanguage(cardSetDTO.getFirstLanguage());
         cardSet.setSecondLanguage(cardSetDTO.getSecondLanguage());
 
-        return convertCardSetToDTO(cardSetRepository.save(cardSet));
+        return convertCardSetToDTO(cardSetRepository.save(cardSet),"NO");
     }
 
     private CardSet findCardSetByIdAndVerifyOwner(Long id) {
@@ -72,54 +69,15 @@ public class CardSetService {
                 .orElseThrow(() -> new UnauthorizedAccessException("Access denied or Card Set not found"));
     }
 
-    public boolean hasAccessToCardSet(Long cardSetId, String username) {
-        CardSet cardSet = cardSetRepository.findById(cardSetId)
-                .orElseThrow(() -> new CardSetNotFoundException("Card Set not found"));
-
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
-
-        return cardSet.getCreator().equals(user) || cardSet.getApprovedUsers().contains(user);
-    }
-
-    private CardSetWithCardsDTO convertCardSetWithCardsToDTO(CardSet cardSet) {
-        return new CardSetWithCardsDTO(
-                cardSet.getId(),
-                cardSet.getName(),
-                cardSet.isPublic(),
-                cardSet.getFirstLanguage().toString(),
-                cardSet.getSecondLanguage().toString(),
-                cardSet.getCreator().getId(),
-                cardService.convertCardToDTO(cardSet.getCards())
-        );
-    }
-
-    private CardSetDTO convertCardSetToDTO(CardSet cardSet) {
+    private CardSetDTO convertCardSetToDTO(CardSet cardSet,String accessible) {
         return new CardSetDTO(
                 cardSet.getId(),
                 cardSet.getName(),
                 cardSet.isPublic(),
                 cardSet.getFirstLanguage().toString(),
                 cardSet.getSecondLanguage().toString(),
-                cardSet.getCreator().getId()
+                cardSet.getCreator().getId(),
+                accessible
         );
-    }
-
-    public List<CardSetDTO> getCardSetsByUsername(String username) {
-        List<CardSetDTO> cardSetDTOS = new ArrayList<>();
-        for (CardSet cardSet : cardSetRepository.findByOwnersUsername(username)) {
-            CardSetDTO dto = convertCardSetToDTO(cardSet);
-            cardSetDTOS.add(dto);
-        }
-        return cardSetDTOS;
-    }
-
-    public List<CardSetDTO> getAllCardSets() {
-        List<CardSetDTO> cardSetDTOS = new ArrayList<>();
-        for (CardSet cardSet : cardSetRepository.findAll()) {
-            CardSetDTO dto = convertCardSetToDTO(cardSet);
-            cardSetDTOS.add(dto);
-        }
-        return cardSetDTOS;
     }
 }

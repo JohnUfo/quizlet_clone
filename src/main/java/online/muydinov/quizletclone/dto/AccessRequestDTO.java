@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class SetAccessRequestDTO {
+public class AccessRequestDTO {
     private Long id;
     private Long cardSetId;
     private String cardSetName;

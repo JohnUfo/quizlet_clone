@@ -21,8 +21,8 @@ public class Card {
     @GeneratedValue(strategy = IDENTITY)
     private Long id;
 
-    private String firstCard;
-    private String secondCard;
+    private String term;
+    private String definition;
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "set_id", nullable = false)

@@ -7,8 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CardDTO {
-    private Long id;
-    private String term;
-    private String definition;
+public class Response {
+    private String response;
+    private String message;
 }

@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 public interface CardRepository extends JpaRepository<Card, Long> {
-    @Query("SELECT new online.muydinov.quizletclone.dto.CardDTO(c.id, c.firstCard, c.secondCard) " +
+    @Query("SELECT new online.muydinov.quizletclone.dto.CardDTO(c.id, c.term, c.definition) " +
             "FROM Card c WHERE c.cardSet.id = :cardSetId")
     List<CardDTO> findAllByCardSet_Id(Long cardSetId);
 }
