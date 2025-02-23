@@ -58,18 +58,27 @@ public class SetAccessRequestService {
     }
 
     @Transactional
-    public String respondToRequest(Long setId, Long requestId, boolean approve) {
-        CardSet cardSet = cardSetRepository.findById(setId)
-                .orElseThrow(() -> new RuntimeException("Card Set not found"));
+    public String respondToRequest(Long cardSetId, Long requestId, boolean approve) {
+        // Validate cardSetId
+        CardSet cardSet = cardSetRepository.findById(cardSetId)
+                .orElseThrow(() -> new CardSetNotFoundException("Card Set not found"));
 
+        // Validate requestId
+        SetAccessRequest request = accessRequestRepository.findById(requestId)
+                .orElseThrow(() -> new RuntimeException("Request not found"));
+
+        // Ensure the request belongs to the card set
+        if (!request.getCardSet().getId().equals(cardSetId)) {
+            throw new RuntimeException("Request does not belong to the specified card set");
+        }
+
+        // Ensure the logged-in user is the creator of the card set
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         if (!cardSet.getCreator().getUsername().equals(username)) {
             return "Only the creator can approve or reject requests!";
         }
 
-        SetAccessRequest request = accessRequestRepository.findById(requestId)
-                .orElseThrow(() -> new RuntimeException("Request not found"));
-
+        // Update the request status
         if (approve) {
             request.setStatus(RequestStatus.APPROVED);
             cardSet.getApprovedUsers().add(request.getRequester());

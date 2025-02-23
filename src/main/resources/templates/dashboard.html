@@ -542,20 +542,20 @@
 
         pendingRequests.forEach(request => {
             const notificationHTML = `
-                <div class="notification-item">
-                    <p>User <strong>${request.requesterUsername}</strong> requested access to <strong>${request.cardSetName}</strong>.</p>
-                    <div class="notification-actions">
-                        <button class="accept" onclick="handleRequest('${request.id}', 'accept')">Accept</button>
-                        <button class="reject" onclick="handleRequest('${request.id}', 'reject')">Reject</button>
-                    </div>
-                </div>
-            `;
+        <div class="notification-item">
+            <p>User <strong>${request.requesterUsername}</strong> requested access to <strong>${request.cardSetName}</strong>.</p>
+            <div class="notification-actions">
+                <button class="accept" onclick="handleRequest('${request.id}', '${request.cardSetId}', 'accept')">Accept</button>
+                <button class="reject" onclick="handleRequest('${request.id}', '${request.cardSetId}', 'reject')">Reject</button>
+            </div>
+        </div>
+    `;
             notificationsContainer.innerHTML += notificationHTML;
         });
     }
 
     // Handle accept/reject request
-    async function handleRequest(requestId, action) {
+    async function handleRequest(requestId, cardSetId, action) {
         const token = localStorage.getItem('jwt');
         if (!token) {
             alert("You are not logged in!");
@@ -564,7 +564,7 @@
 
         try {
             // Send the approve parameter as a query parameter
-            const response = await fetch(`/cardsets/${requestId}/requests/${requestId}?approve=${action === 'accept'}`, {
+            const response = await fetch(`/cardsets/${cardSetId}/requests/${requestId}?approve=${action === 'accept'}`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': 'Bearer ' + token,
