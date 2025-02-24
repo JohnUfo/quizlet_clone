@@ -168,19 +168,17 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         }
 
-        .cardset::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-            transition: 0.5s;
-        }
-
-        .cardset:hover::before {
-            left: 100%;
+        .access-type {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 8px;
+            font-weight: 400;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 4px 8px;
+            border-radius: 12px;
+            display: inline-block;
         }
 
         .modal {
@@ -259,46 +257,29 @@
             background-color: #ccc;
             transition: 0.3s;
             border-radius: 24px;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .slider:before {
             position: absolute;
             content: "";
-            height: 18px;
-            width: 18px;
-            left: 4px;
-            bottom: 3px;
+            height: 20px;
+            width: 20px;
+            left: 2px;
+            bottom: 2px;
             background-color: white;
             transition: 0.3s;
             border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         input:checked + .slider {
-            background-color: #28a745;
+            background-color: #6a11cb;
         }
 
         input:checked + .slider:before {
             transform: translateX(26px);
-        }
-
-        .notification-item {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .notification-item p {
-            margin: 0;
-            font-size: 16px;
-        }
-
-        .notification-actions {
-            display: flex;
-            gap: 10px;
+            background-color: white;
         }
 
         .notification-actions button {
@@ -323,12 +304,7 @@
 
         .notification-actions button:hover {
             transform: scale(1.05);
-        }
-
-        .small-btn {
-            padding: 8px 16px;
-            font-size: 14px;
-            margin-top: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
     </style>
 </head>
@@ -359,8 +335,6 @@
     </div>
 </div>
 <script>
-    let cardsets = [];
-
     async function createCardSet() {
         const token = localStorage.getItem('jwt');
         if (!token) {
@@ -411,9 +385,7 @@
             headers: { 'Authorization': 'Bearer ' + token }
         });
         if (response.ok) {
-            const allCardSets = await response.json();
-            console.log("Data received from backend:", allCardSets); // Log the data
-            return allCardSets;
+            return await response.json();
         } else {
             console.error('Error fetching all card sets');
             return [];
@@ -486,7 +458,7 @@
             if (result.message) {
                 alert(result.message);
             } else if (result.error) {
-                alert(result.error); // Display error message
+                alert(result.error);
             }
             renderNotifications();
         } catch (error) {
@@ -527,17 +499,13 @@
             alert("You are not logged in!");
             return;
         }
-
         try {
             const response = await fetch(`/cardsets/${cardSetId}`, {
                 headers: { 'Authorization': 'Bearer ' + token }
             });
-
             if (!response.ok) {
                 throw new Error("You do not have access to this card set");
             }
-
-            // Navigate to another HTML page (replace with your desired URL)
             window.location.href = `/cardset?cardSetId=${cardSetId}`;
         } catch (error) {
             console.error(error);
@@ -572,52 +540,55 @@
         const username = localStorage.getItem('username');
         const container = document.querySelector('.main-content .container');
         container.innerHTML = `
-            <div class="header">
-                <span class="username-display">👋 Welcome, ${username || 'User'}!</span>
-                <button class="logout-btn" onclick="logout()">Logout</button>
-            </div>
-            <h2>🏠 Home</h2>
-            <div class="search-container">
-                <input type="text" id="searchBar" class="search-box" placeholder="🔍 Search all card sets..." onkeyup="filterAllCardSets()">
-            </div>
-            <div id="all-cardsets" class="card-grid">Loading...</div>
-        `;
+        <div class="header">
+            <span class="username-display">👋 Welcome, ${username || 'User'}!</span>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+        <h2>🏠 Home</h2>
+        <div class="search-container">
+            <input type="text" id="searchBar" class="search-box" placeholder="🔍 Search all card sets..." onkeyup="filterAllCardSets()">
+        </div>
+        <div id="all-cardsets" class="card-grid">Loading...</div>
+    `;
 
         const allCardSets = await fetchAllCardSets();
         const allCardSetsContainer = document.getElementById('all-cardsets');
         allCardSetsContainer.innerHTML = '';
 
-        // Group cardsets by ID and keep the one with the highest priority accessType
+        const filteredCardSets = allCardSets.filter(set => set.accessType !== 'PRIVATE');
+
         const uniqueCardSets = {};
-        allCardSets.forEach(set => {
+        filteredCardSets.forEach(set => {
             if (!uniqueCardSets[set.id] || set.accessType === 'OWNER') {
                 uniqueCardSets[set.id] = set;
             }
         });
 
-        // Render unique cardsets
         Object.values(uniqueCardSets).forEach(set => {
             let buttonHTML = '';
+            let accessTypeHTML = '';
 
             if (set.accessType === 'OWNER' || set.accessType === 'ACCESSIBLE') {
-                buttonHTML = '';
+                // Show access type for OWNER or ACCESSIBLE card sets
+                accessTypeHTML = `<div class="access-type">${set.accessType}</div>`;
             } else if (set.accessType === 'PUBLIC') {
                 buttonHTML = `<button class="btn" onclick="requestAccess('${set.id}')">Send Request</button>`;
             } else if (set.accessType === 'PENDING') {
                 buttonHTML = `<button class="btn" disabled>PENDING</button>`;
             } else if (set.accessType === 'DECLINED') {
                 buttonHTML = `
-                    <button class="btn" disabled>DECLINED</button>
-                    <button class="btn small-btn" onclick="requestAccess('${set.id}')">Send Request Again</button>
-                `;
+                <button class="btn" disabled>DECLINED</button>
+                <button class="btn small-btn" onclick="requestAccess('${set.id}')">Send Request Again</button>
+            `;
             }
 
             const cardSetHTML = `
-                <div class="cardset" ${set.accessType === 'OWNER' || set.accessType === 'ACCESSIBLE' ? `onclick="openCardSet('${set.id}')"` : ''}>
-                    <h3>${set.name}</h3>
-                    ${buttonHTML}
-                </div>
-            `;
+            <div class="cardset" ${set.accessType === 'OWNER' || set.accessType === 'ACCESSIBLE' ? `onclick="openCardSet('${set.id}')"` : ''}>
+                <h3>${set.name}</h3>
+                ${accessTypeHTML}
+                ${buttonHTML}
+            </div>
+        `;
             allCardSetsContainer.innerHTML += cardSetHTML;
         });
     }
@@ -634,10 +605,35 @@
             </div>
             <div id="cardsets" class="card-grid">Loading...</div>
         `;
+
         const allCardSets = await fetchCardSets();
         const username = localStorage.getItem('username');
-        const userCardSets = allCardSets.filter(set => set.creatorName === username);
+
+        const userCardSets = allCardSets.filter(set =>
+            set.creatorName === username && (set.accessType === 'OWNER' || set.accessType === 'PRIVATE')
+        );
+
         renderCardSets(userCardSets);
+    }
+
+    function renderCardSets(cardSets) {
+        const cardsetsContainer = document.getElementById('cardsets');
+        if (!cardsetsContainer) {
+            console.error("Cardsets container not found!");
+            return;
+        }
+
+        if (cardSets.length === 0) {
+            cardsetsContainer.innerHTML = `<p>No card sets found.</p>`;
+            return;
+        }
+
+        cardsetsContainer.innerHTML = cardSets.map(set => `
+            <div class="cardset" onclick="openCardSet('${set.id}')">
+                <h3>${set.name}</h3>
+                <div class="access-type">${set.accessType}</div>
+            </div>
+        `).join('');
     }
 
     async function renderNotifications() {
@@ -675,7 +671,6 @@
             alert("You are not logged in!");
             return;
         }
-
         try {
             const response = await fetch(`/request/${cardSetId}/request-access`, {
                 method: 'POST',
@@ -684,15 +679,11 @@
                     'Content-Type': 'application/json'
                 }
             });
-
             if (!response.ok) {
                 throw new Error("Failed to request access");
             }
-
             const result = await response.json();
             alert(result.message);
-
-            // Update the button to "Request Sent"
             const cardSetElement = document.querySelector(`.cardset[onclick*="${cardSetId}"]`);
             if (cardSetElement) {
                 const button = cardSetElement.querySelector('.btn');
