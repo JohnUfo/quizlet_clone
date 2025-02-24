@@ -19,15 +19,6 @@ public class CardSetDTO {
     private String creatorName;
     private String accessType;
 
-    public CardSetDTO(Long id, String name, Boolean isPublic, String firstLanguage, String secondLanguage, Long creatorId) {
-        this.id = id;
-        this.name = name;
-        this.isPublic = isPublic;
-        this.firstLanguage = firstLanguage;
-        this.secondLanguage = secondLanguage;
-        this.creatorId = creatorId;
-    }
-
     public CardSetDTO(Long id, String name, Boolean isPublic, String firstLanguage, String secondLanguage, Long creatorId, String accessType) {
         this.id = id;
         this.name = name;

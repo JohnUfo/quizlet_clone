@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -35,13 +36,13 @@ public class CardSet {
     @JoinColumn(name = "creator_id", nullable = false)
     private User creator;
 
-    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @ManyToMany(fetch = FetchType.EAGER) // Eagerly fetch the collection
     @JoinTable(
             name = "accessible_sets",
             joinColumns = @JoinColumn(name = "set_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-    private Set<User> approvedUsers;
+    private Set<User> approvedUsers = new HashSet<>();
 
     @Column(nullable = false)
     private boolean isPublic;

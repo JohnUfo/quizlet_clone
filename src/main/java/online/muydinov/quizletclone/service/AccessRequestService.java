@@ -1,22 +1,18 @@
 package online.muydinov.quizletclone.service;
 
-import com.sun.jdi.request.DuplicateRequestException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import online.muydinov.quizletclone.dto.AccessRequestDTO;
-import online.muydinov.quizletclone.dto.CardSetDTO;
 import online.muydinov.quizletclone.dto.Response;
 import online.muydinov.quizletclone.dto.UserDTO;
-import online.muydinov.quizletclone.entity.CardSet;
 import online.muydinov.quizletclone.entity.AccessRequest;
+import online.muydinov.quizletclone.entity.CardSet;
 import online.muydinov.quizletclone.entity.User;
 import online.muydinov.quizletclone.exceptions.CardSetNotFoundException;
 import online.muydinov.quizletclone.exceptions.UnauthorizedAccessException;
-import online.muydinov.quizletclone.repository.CardSetRepository;
 import online.muydinov.quizletclone.repository.AccessRequestRepository;
+import online.muydinov.quizletclone.repository.CardSetRepository;
 import online.muydinov.quizletclone.repository.UserRepository;
-import org.hibernate.StaleObjectStateException;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -42,11 +38,9 @@ public class AccessRequestService {
         User user = new User();
         user.setId(requester.getId());
 
-        // Fetch the card set
         CardSet cardSet = cardSetRepository.findById(cardSetId)
                 .orElseThrow(() -> new CardSetNotFoundException("Card set not found"));
 
-        // Check if the user is the creator or already has access
         if (cardSet.getCreator().getId().equals(requester.getId())) {
             return new Response("message", "You are the creator of this card set.");
         }
@@ -55,7 +49,6 @@ public class AccessRequestService {
             return new Response("message", "You already have access to this card set.");
         }
 
-        // Check if the user already has a pending or declined request
         Optional<AccessRequest> existingRequest = accessRequestRepository
                 .findByCardSetIdAndRequesterId(cardSetId, requester.getId());
 
@@ -70,7 +63,6 @@ public class AccessRequestService {
             }
         }
 
-        // If the user doesn't have access, create a new access request
         AccessRequest request = new AccessRequest();
         request.setRequester(user);
         request.setCardSet(cardSet);
@@ -80,38 +72,28 @@ public class AccessRequestService {
         return new Response("message", "Request sent successfully!");
     }
 
-    @Transactional
     public Response respondToRequest(Long cardSetId, Long requestId, boolean approve) {
-        try {
-            CardSet cardSet = cardSetRepository.findById(cardSetId)
-                    .orElseThrow(() -> new CardSetNotFoundException("Card Set not found"));
+        CardSet cardSet = cardSetRepository.findById(cardSetId)
+                .orElseThrow(() -> new CardSetNotFoundException("Card Set not found"));
 
-            AccessRequest request = accessRequestRepository.findById(requestId)
-                    .orElseThrow(() -> new RuntimeException("Request not found"));
+        AccessRequest request = accessRequestRepository.findById(requestId)
+                .orElseThrow(() -> new RuntimeException("Request not found"));
 
-            if (!request.getCardSet().getId().equals(cardSetId)) {
-                throw new RuntimeException("Request does not belong to the specified card set");
-            }
-
-            String username = SecurityContextHolder.getContext().getAuthentication().getName();
-            if (!cardSet.getCreator().getUsername().equals(username)) {
-                return new Response("message", "Only the creator can approve or reject requests!");
-            }
-
-            if (approve) {
-                cardSet.getApprovedUsers().add(request.getRequester());
-                cardSetRepository.save(cardSet);
-                accessRequestRepository.delete(request); // Delete the request after approval
-            } else {
-                request.setStatus("REJECTED");
-                accessRequestRepository.save(request); // Save the updated request
-            }
-
-            return new Response("message", "Request has been " + (approve ? "approved" : "rejected"));
-        } catch (ObjectOptimisticLockingFailureException | StaleObjectStateException e) {
-            // Handle concurrency issues
-            return new Response("error", "The request was modified by another user. Please try again.");
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        if (!cardSet.getCreator().getUsername().equals(username)) {
+            return new Response("message", "Only the creator can approve or reject requests!");
         }
+
+        if (approve) {
+            cardSet.getApprovedUsers().add(request.getRequester());
+            cardSetRepository.save(cardSet);
+            accessRequestRepository.delete(request);
+        } else {
+            request.setStatus("REJECTED");
+            accessRequestRepository.save(request);
+        }
+
+        return new Response("message", "Request has been " + (approve ? "approved" : "rejected"));
     }
 
     public List<AccessRequestDTO> getPendingRequests(Long cardsetId) {

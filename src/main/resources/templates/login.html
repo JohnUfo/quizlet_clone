@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Quizlet Clone</title>
     <style>
-        /* General Styles */
         * {
             margin: 0;
             padding: 0;
@@ -18,13 +17,13 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background: linear-gradient(to right, #6a11cb, #2575fc); /* Updated gradient */
-            color: #333; /* Darker text color for better contrast */
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: #333;
             text-align: center;
         }
 
         .container {
-            background: rgba(255, 255, 255, 0.9); /* Light background for the form */
+            background: rgba(255, 255, 255, 0.9);
             padding: 40px;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
@@ -33,29 +32,29 @@
 
         h2 {
             margin-bottom: 20px;
-            color: #333; /* Darker heading color */
+            color: #333;
         }
 
         input {
             width: 100%;
             padding: 10px;
             margin: 10px 0;
-            border: 1px solid #ccc; /* Light border for inputs */
+            border: 1px solid #ccc;
             border-radius: 5px;
             font-size: 16px;
-            background: rgba(255, 255, 255, 0.9); /* Light background for inputs */
-            color: #333; /* Darker text color for inputs */
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
         }
 
         input::placeholder {
-            color: #666; /* Darker placeholder text */
+            color: #666;
         }
 
         .btn {
             width: 100%;
             padding: 10px;
             font-size: 18px;
-            background: #4caf50; /* Green button */
+            background: #4caf50;
             color: white;
             border: none;
             border-radius: 5px;
@@ -69,23 +68,23 @@
         }
 
         .btn-secondary {
-            background: #ff9800; /* Orange button */
+            background: #ff9800;
         }
 
         .message {
             margin-top: 15px;
             font-size: 14px;
-            color: #333; /* Darker text for messages */
+            color: #333;
         }
 
         .link {
             margin-top: 10px;
             font-size: 14px;
-            color: #333; /* Darker text for links */
+            color: #333;
         }
 
         .link a {
-            color: #ff9800; /* Orange link color */
+            color: #ff9800;
             text-decoration: none;
         }
 
@@ -125,11 +124,11 @@
             const token = await response.text();
             localStorage.setItem('jwt', token);
             localStorage.setItem('username', username);
-            message.style.color = 'green'; /* Success message in green */
+            message.style.color = 'green';
             message.innerText = "Login successful! Redirecting...";
             setTimeout(() => window.location.href = '/dashboard', 2000);
         } else {
-            message.style.color = 'red'; /* Error message in red */
+            message.style.color = 'red';
             message.innerText = "Invalid credentials!";
         }
     });
