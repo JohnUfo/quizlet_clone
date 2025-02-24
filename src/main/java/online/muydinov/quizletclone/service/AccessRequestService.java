@@ -72,24 +72,40 @@ public class AccessRequestService {
         return new Response("message", "Request sent successfully!");
     }
 
+    @Transactional
     public Response respondToRequest(Long cardSetId, Long requestId, boolean approve) {
-        CardSet cardSet = cardSetRepository.findById(cardSetId)
-                .orElseThrow(() -> new CardSetNotFoundException("Card Set not found"));
-
+        // Fetch the existing AccessRequest from the database
         AccessRequest request = accessRequestRepository.findById(requestId)
-                .orElseThrow(() -> new RuntimeException("Request not found"));
+                .orElseThrow(() -> new RuntimeException("Access request not found"));
 
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        if (!cardSet.getCreator().getUsername().equals(username)) {
-            return new Response("message", "Only the creator can approve or reject requests!");
+        // Validate that the request belongs to the specified cardSetId
+        if (!request.getCardSet().getId().equals(cardSetId)) {
+            throw new RuntimeException("Invalid cardSetId for the given request");
+        }
+
+        // Get the current user's details
+        String username = myUserDetailsService.getUsername();
+        Long requesterId = myUserDetailsService.getUserIdByUsername(username);
+
+        // Check if the current user is authorized to respond to this request
+        if (!request.getCardSet().getCreator().getId().equals(requesterId)) {
+            throw new UnauthorizedAccessException("You are not authorized to respond to this request");
         }
 
         if (approve) {
-            cardSet.getApprovedUsers().add(request.getRequester());
-            cardSetRepository.save(cardSet);
+            // Approve the request
+            request.setStatus("APPROVED");
+
+            // Add the user to the approvedUsers set
+            cardSetRepository.addApprovedUser(cardSetId, request.getRequester().getId());
+
+            // Delete the access request after approval
             accessRequestRepository.delete(request);
         } else {
+            // Reject the request
             request.setStatus("REJECTED");
+
+            // Save the updated request (no need to create a new one)
             accessRequestRepository.save(request);
         }
 

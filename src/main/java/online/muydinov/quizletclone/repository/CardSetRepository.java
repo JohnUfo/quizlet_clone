@@ -3,6 +3,7 @@ package online.muydinov.quizletclone.repository;
 import online.muydinov.quizletclone.dto.CardSetDTO;
 import online.muydinov.quizletclone.entity.CardSet;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -25,7 +26,7 @@ public interface CardSetRepository extends JpaRepository<CardSet, Long> {
             "WHERE c.creator.id = :currentUserId " + // Include card sets created by the current user
             "OR c.isPublic = true " + // Include public card sets
             "OR :currentUserId IN (SELECT u.id FROM c.approvedUsers u) " + // Include card sets where the current user is approved
-            "OR EXISTS (SELECT 1 FROM AccessRequest ar WHERE ar.cardSet.id = c.id AND ar.requester.id = :currentUserId)") // Include card sets where the current user has a pending or declined request
+            "OR EXISTS (SELECT 1 FROM AccessRequest ar WHERE ar.cardSet.id = c.id AND ar.requester.id = :currentUserId)")
     List<CardSetDTO> findAllPublicAndAccessibleCardsets(@Param("currentUserId") Long currentUserId);
 
     @Query("SELECT c FROM CardSet c WHERE c.id = :setId AND c.creator.username = :username")
@@ -49,7 +50,10 @@ public interface CardSetRepository extends JpaRepository<CardSet, Long> {
             "AND (c.creator.id = :currentUserId " + // Include card sets created by the current user
             "OR c.isPublic = true " + // Include public card sets
             "OR :currentUserId IN (SELECT u.id FROM c.approvedUsers u) " + // Include card sets where the current user is approved
-            "OR EXISTS (SELECT 1 FROM AccessRequest ar WHERE ar.cardSet.id = c.id AND ar.requester.id = :currentUserId))") // Include card sets where the current user has a pending or declined request
+            "OR EXISTS (SELECT 1 FROM AccessRequest ar WHERE ar.cardSet.id = c.id AND ar.requester.id = :currentUserId))")
     CardSetDTO findPublicAndAccessibleCardsets(@Param("cardSetId") Long cardSetId, @Param("currentUserId") Long currentUserId);
 
+    @Modifying
+    @Query(value = "INSERT INTO accessible_sets (set_id, user_id) VALUES (?1, ?2)", nativeQuery = true)
+    void addApprovedUser(Long cardSetId, Long userId);
 }

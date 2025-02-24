@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import static jakarta.persistence.CascadeType.*;
@@ -36,7 +37,7 @@ public class CardSet {
     @JoinColumn(name = "creator_id", nullable = false)
     private User creator;
 
-    @ManyToMany(fetch = FetchType.EAGER) // Eagerly fetch the collection
+    @ManyToMany(fetch = FetchType.LAZY) // Use lazy fetching
     @JoinTable(
             name = "accessible_sets",
             joinColumns = @JoinColumn(name = "set_id"),
@@ -51,4 +52,17 @@ public class CardSet {
     private String firstLanguage;
     @Column(nullable = false)
     private String secondLanguage;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return Objects.equals(id, user.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 }
