@@ -12,14 +12,14 @@ import lombok.Setter;
 public class CardSetDTO {
     private Long id;
     private String name;
-    private boolean isPublic;
+    private Boolean isPublic;
     private String firstLanguage;
     private String secondLanguage;
     private Long creatorId;
     private String creatorName;
     private String accessType;
 
-    public CardSetDTO(Long id, String name, boolean isPublic, String firstLanguage, String secondLanguage, Long creatorId) {
+    public CardSetDTO(Long id, String name, Boolean isPublic, String firstLanguage, String secondLanguage, Long creatorId) {
         this.id = id;
         this.name = name;
         this.isPublic = isPublic;
@@ -28,7 +28,7 @@ public class CardSetDTO {
         this.creatorId = creatorId;
     }
 
-    public CardSetDTO(Long id, String name, boolean isPublic, String firstLanguage, String secondLanguage, Long creatorId, String accessType) {
+    public CardSetDTO(Long id, String name, Boolean isPublic, String firstLanguage, String secondLanguage, Long creatorId, String accessType) {
         this.id = id;
         this.name = name;
         this.isPublic = isPublic;

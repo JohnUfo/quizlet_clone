@@ -46,7 +46,7 @@ public class CardSetService {
 
         CardSet cardSet = new CardSet();
         cardSet.setName(cardSetDTO.getName());
-        cardSet.setPublic(cardSetDTO.isPublic());
+        cardSet.setPublic(cardSetDTO.getIsPublic());
         cardSet.setCreator(creator);
         cardSet.setFirstLanguage(cardSetDTO.getFirstLanguage());
         cardSet.setSecondLanguage(cardSetDTO.getSecondLanguage());
@@ -63,7 +63,7 @@ public class CardSetService {
         CardSet cardSet = findCardSetByIdAndVerifyOwner(id);
 
         cardSet.setName(cardSetDTO.getName());
-        cardSet.setPublic(cardSetDTO.isPublic());
+        cardSet.setPublic(cardSetDTO.getIsPublic());
         cardSet.setFirstLanguage(cardSetDTO.getFirstLanguage());
         cardSet.setSecondLanguage(cardSetDTO.getSecondLanguage());
 
