@@ -559,16 +559,18 @@
     }
 
     async function renderAllCardSets() {
+        const username = localStorage.getItem('username'); // Get username from local storage
         const container = document.querySelector('.main-content .container');
         container.innerHTML = `
-        <div class="header">
-            <button class="logout-btn" onclick="logout()">Logout</button>
-        </div>
-        <h2>🏠 Home</h2>
-        <div class="search-container">
-            <input type="text" id="searchBar" class="search-box" placeholder="🔍 Search all card sets..." onkeyup="filterAllCardSets()">
-        </div>
-        <div id="all-cardsets" class="card-grid">Loading...</div>
+    <div class="header">
+        <span class="username-display">👋 Welcome, ${username || 'User'}!</span>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+    <h2>🏠 Home</h2>
+    <div class="search-container">
+        <input type="text" id="searchBar" class="search-box" placeholder="🔍 Search all card sets..." onkeyup="filterAllCardSets()">
+    </div>
+    <div id="all-cardsets" class="card-grid">Loading...</div>
     `;
 
         const allCardSets = await fetchAllCardSets();
@@ -579,31 +581,28 @@
             let buttonHTML = '';
 
             if (set.accessType === 'OWNER' || set.accessType === 'ACCESSIBLE') {
-                // No button, make the entire card clickable
                 buttonHTML = '';
             } else if (set.accessType === 'PUBLIC') {
-                // Show "Send Request" button
                 buttonHTML = `<button class="btn" onclick="requestAccess('${set.id}')">Send Request</button>`;
             } else if (set.accessType === 'PENDING') {
-                // Show disabled "PENDING" button
                 buttonHTML = `<button class="btn" disabled>PENDING</button>`;
             } else if (set.accessType === 'DECLINED') {
-                // Show disabled "DECLINED" button and a small "Send Request Again" button
                 buttonHTML = `
-                <button class="btn" disabled>DECLINED</button>
-                <button class="btn small-btn" onclick="requestAccess('${set.id}')">Send Request Again</button>
-            `;
+            <button class="btn" disabled>DECLINED</button>
+            <button class="btn small-btn" onclick="requestAccess('${set.id}')">Send Request Again</button>
+        `;
             }
 
             const cardSetHTML = `
-            <div class="cardset" ${set.accessType === 'OWNER' || set.accessType === 'ACCESSIBLE' ? `onclick="openCardSet('${set.id}')"` : ''}>
-                <h3>${set.name}</h3>
-                ${buttonHTML}
-            </div>
-        `;
+        <div class="cardset" ${set.accessType === 'OWNER' || set.accessType === 'ACCESSIBLE' ? `onclick="openCardSet('${set.id}')"` : ''}>
+            <h3>${set.name}</h3>
+            ${buttonHTML}
+        </div>
+    `;
             allCardSetsContainer.innerHTML += cardSetHTML;
         });
     }
+
 
     async function renderLibraryCardSets() {
         const container = document.querySelector('.main-content .container');

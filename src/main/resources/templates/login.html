@@ -124,6 +124,7 @@
         if (response.ok) {
             const token = await response.text();
             localStorage.setItem('jwt', token);
+            localStorage.setItem('username', username);
             message.style.color = 'green'; /* Success message in green */
             message.innerText = "Login successful! Redirecting...";
             setTimeout(() => window.location.href = '/dashboard', 2000);
