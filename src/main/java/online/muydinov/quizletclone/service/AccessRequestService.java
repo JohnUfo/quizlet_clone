@@ -61,8 +61,10 @@ public class AccessRequestService {
             AccessRequest request = existingRequest.get();
             if (request.getStatus().equals("PENDING")) {
                 return new Response("message", "You already have a pending request for this card set.");
-            } else if (request.getStatus().equals("DECLINED")) {
-                return new Response("message", "Your previous request for this card set was declined.");
+            } else if (request.getStatus().equals("REJECTED")) {
+                existingRequest.get().setStatus("PENDING");
+                accessRequestRepository.save(existingRequest.get());
+                return new Response("message", "Request sent successfully!");
             }
         }
 
@@ -93,9 +95,9 @@ public class AccessRequestService {
         }
 
         if (approve) {
-            request.setStatus("APPROVED");
             cardSet.getApprovedUsers().add(request.getRequester());
             cardSetRepository.save(cardSet);
+            accessRequestRepository.delete(request);
         } else {
             request.setStatus("REJECTED");
         }

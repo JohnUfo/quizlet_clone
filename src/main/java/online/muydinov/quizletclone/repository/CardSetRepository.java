@@ -17,16 +17,15 @@ public interface CardSetRepository extends JpaRepository<CardSet, Long> {
             "CASE " +
             "   WHEN c.creator.id = :currentUserId THEN 'OWNER' " + // Current user is the creator
             "   WHEN :currentUserId IN (SELECT u.id FROM c.approvedUsers u) THEN 'ACCESSIBLE' " + // Current user has access
-            "   WHEN ar.status = 'PENDING' THEN 'PENDING' " + // Current user has a pending request
-            "   WHEN ar.status = 'DECLINED' THEN 'DECLINED' " + // Current user's request was declined
+            "   WHEN EXISTS (SELECT 1 FROM AccessRequest ar WHERE ar.cardSet.id = c.id AND ar.requester.id = :currentUserId AND ar.status = 'PENDING') THEN 'PENDING' " + // Current user has a pending request
+            "   WHEN EXISTS (SELECT 1 FROM AccessRequest ar WHERE ar.cardSet.id = c.id AND ar.requester.id = :currentUserId AND ar.status = 'DECLINED') THEN 'DECLINED' " + // Current user's request was declined
             "   ELSE 'PUBLIC' " + // Card set is public
             "END) " +
             "FROM CardSet c " +
-            "LEFT JOIN AccessRequest ar ON ar.cardSet.id = c.id AND ar.requester.id = :currentUserId " +
             "WHERE c.creator.id = :currentUserId " + // Include card sets created by the current user
             "OR c.isPublic = true " + // Include public card sets
             "OR :currentUserId IN (SELECT u.id FROM c.approvedUsers u) " + // Include card sets where the current user is approved
-            "OR ar IS NOT NULL") // Include card sets where the current user has a pending or declined request
+            "OR EXISTS (SELECT 1 FROM AccessRequest ar WHERE ar.cardSet.id = c.id AND ar.requester.id = :currentUserId)") // Include card sets where the current user has a pending or declined request
     List<CardSetDTO> findAllPublicAndAccessibleCardsets(@Param("currentUserId") Long currentUserId);
 
     @Query("SELECT c FROM CardSet c WHERE c.id = :setId AND c.creator.username = :username")
@@ -41,16 +40,16 @@ public interface CardSetRepository extends JpaRepository<CardSet, Long> {
             "CASE " +
             "   WHEN c.creator.id = :currentUserId THEN 'OWNER' " + // Current user is the creator
             "   WHEN :currentUserId IN (SELECT u.id FROM c.approvedUsers u) THEN 'ACCESSIBLE' " + // Current user has access
-            "   WHEN ar.status = 'PENDING' THEN 'PENDING' " + // Current user has a pending request
-            "   WHEN ar.status = 'DECLINED' THEN 'DECLINED' " + // Current user's request was declined
+            "   WHEN EXISTS (SELECT 1 FROM AccessRequest ar WHERE ar.cardSet.id = c.id AND ar.requester.id = :currentUserId AND ar.status = 'PENDING') THEN 'PENDING' " + // Current user has a pending request
+            "   WHEN EXISTS (SELECT 1 FROM AccessRequest ar WHERE ar.cardSet.id = c.id AND ar.requester.id = :currentUserId AND ar.status = 'DECLINED') THEN 'DECLINED' " + // Current user's request was declined
             "   ELSE 'PUBLIC' " + // Card set is public
             "END) " +
             "FROM CardSet c " +
-            "LEFT JOIN AccessRequest ar ON ar.cardSet.id = c.id AND ar.requester.id = :currentUserId " +
-            "WHERE c.id = :cardSetId AND " + // Filter by cardSetId
-            "(c.creator.id = :currentUserId " + // Include card sets created by the current user
+            "WHERE c.id = :cardSetId " + // Filter by cardSetId
+            "AND (c.creator.id = :currentUserId " + // Include card sets created by the current user
             "OR c.isPublic = true " + // Include public card sets
             "OR :currentUserId IN (SELECT u.id FROM c.approvedUsers u) " + // Include card sets where the current user is approved
-            "OR ar IS NOT NULL)") // Include card sets where the current user has a pending or declined request
+            "OR EXISTS (SELECT 1 FROM AccessRequest ar WHERE ar.cardSet.id = c.id AND ar.requester.id = :currentUserId))") // Include card sets where the current user has a pending or declined request
     CardSetDTO findPublicAndAccessibleCardsets(@Param("cardSetId") Long cardSetId, @Param("currentUserId") Long currentUserId);
+
 }
