@@ -15,6 +15,8 @@ import online.muydinov.quizletclone.exceptions.UnauthorizedAccessException;
 import online.muydinov.quizletclone.repository.CardSetRepository;
 import online.muydinov.quizletclone.repository.AccessRequestRepository;
 import online.muydinov.quizletclone.repository.UserRepository;
+import org.hibernate.StaleObjectStateException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -78,32 +80,38 @@ public class AccessRequestService {
         return new Response("message", "Request sent successfully!");
     }
 
+    @Transactional
     public Response respondToRequest(Long cardSetId, Long requestId, boolean approve) {
-        CardSet cardSet = cardSetRepository.findById(cardSetId)
-                .orElseThrow(() -> new CardSetNotFoundException("Card Set not found"));
+        try {
+            CardSet cardSet = cardSetRepository.findById(cardSetId)
+                    .orElseThrow(() -> new CardSetNotFoundException("Card Set not found"));
 
-        AccessRequest request = accessRequestRepository.findById(requestId)
-                .orElseThrow(() -> new RuntimeException("Request not found"));
+            AccessRequest request = accessRequestRepository.findById(requestId)
+                    .orElseThrow(() -> new RuntimeException("Request not found"));
 
-        if (!request.getCardSet().getId().equals(cardSetId)) {
-            throw new RuntimeException("Request does not belong to the specified card set");
+            if (!request.getCardSet().getId().equals(cardSetId)) {
+                throw new RuntimeException("Request does not belong to the specified card set");
+            }
+
+            String username = SecurityContextHolder.getContext().getAuthentication().getName();
+            if (!cardSet.getCreator().getUsername().equals(username)) {
+                return new Response("message", "Only the creator can approve or reject requests!");
+            }
+
+            if (approve) {
+                cardSet.getApprovedUsers().add(request.getRequester());
+                cardSetRepository.save(cardSet);
+                accessRequestRepository.delete(request); // Delete the request after approval
+            } else {
+                request.setStatus("REJECTED");
+                accessRequestRepository.save(request); // Save the updated request
+            }
+
+            return new Response("message", "Request has been " + (approve ? "approved" : "rejected"));
+        } catch (ObjectOptimisticLockingFailureException | StaleObjectStateException e) {
+            // Handle concurrency issues
+            return new Response("error", "The request was modified by another user. Please try again.");
         }
-
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        if (!cardSet.getCreator().getUsername().equals(username)) {
-            return new Response("message", "Only the creator can approve or reject requests!");
-        }
-
-        if (approve) {
-            cardSet.getApprovedUsers().add(request.getRequester());
-            cardSetRepository.save(cardSet);
-            accessRequestRepository.delete(request);
-        } else {
-            request.setStatus("REJECTED");
-        }
-
-        accessRequestRepository.save(request);
-        return new Response("message", "Request has been " + (approve ? "approved" : "rejected"));
     }
 
     public List<AccessRequestDTO> getPendingRequests(Long cardsetId) {

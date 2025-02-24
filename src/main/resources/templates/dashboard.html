@@ -483,7 +483,11 @@
                 throw new Error("Failed to handle request");
             }
             const result = await response.json();
-            alert(result.message);
+            if (result.message) {
+                alert(result.message);
+            } else if (result.error) {
+                alert(result.error); // Display error message
+            }
             renderNotifications();
         } catch (error) {
             console.error(error);
