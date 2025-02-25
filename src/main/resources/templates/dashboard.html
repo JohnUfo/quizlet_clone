@@ -181,6 +181,35 @@
             display: inline-block;
         }
 
+        .card-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .update-btn, .delete-btn {
+            padding: 8px 16px;
+            font-size: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .update-btn {
+            background: linear-gradient(135deg, #28a745, #218838);
+            color: white;
+        }
+
+        .delete-btn {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+        }
+
+        .update-btn:hover, .delete-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -281,31 +310,6 @@
             transform: translateX(26px);
             background-color: white;
         }
-
-        .notification-actions button {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.3s ease-in-out;
-        }
-
-        .notification-actions button.accept {
-            background: linear-gradient(135deg, #28a745, #218838);
-            color: white;
-        }
-
-        .notification-actions button.reject {
-            background: linear-gradient(135deg, #dc3545, #c82333);
-            color: white;
-        }
-
-        .notification-actions button:hover {
-            transform: scale(1.05);
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        }
     </style>
 </head>
 <body>
@@ -334,7 +338,26 @@
         <button class="logout-btn" onclick="closeModal()">Cancel</button>
     </div>
 </div>
+<div id="updateCardSetModal" class="modal">
+    <div class="modal-content">
+        <h3>Update Card Set</h3>
+        <input type="text" id="updateSetName" placeholder="Card Set Name">
+        <select id="updateFirstLanguage"></select>
+        <select id="updateSecondLanguage"></select>
+        <div class="toggle-container">
+            <span>Public:</span>
+            <label class="toggle-switch">
+                <input type="checkbox" id="updateIsPublic">
+                <span class="slider"></span>
+            </label>
+        </div>
+        <button class="btn" onclick="updateCardSet()">Update</button>
+        <button class="logout-btn" onclick="closeUpdateModal()">Cancel</button>
+    </div>
+</div>
 <script>
+    let currentCardSetId = null;
+
     async function createCardSet() {
         const token = localStorage.getItem('jwt');
         if (!token) {
@@ -506,7 +529,7 @@
             if (!response.ok) {
                 throw new Error("You do not have access to this card set");
             }
-            window.location.href = `/cardset?cardSetId=${cardSetId}`;
+            window.location.href = `/cards?cardSetId=${cardSetId}`;
         } catch (error) {
             console.error(error);
             alert(error.message);
@@ -521,6 +544,85 @@
         document.getElementById('cardSetModal').style.display = 'none';
     }
 
+    function openUpdateModal(cardSetId) {
+        currentCardSetId = cardSetId;
+        const cardSet = cardSets.find(set => set.id === cardSetId);
+        if (cardSet) {
+            document.getElementById('updateSetName').value = cardSet.name;
+            document.getElementById('updateFirstLanguage').value = cardSet.firstLanguage;
+            document.getElementById('updateSecondLanguage').value = cardSet.secondLanguage;
+            document.getElementById('updateIsPublic').checked = cardSet.isPublic;
+            document.getElementById('updateCardSetModal').style.display = 'flex';
+        }
+    }
+
+    function closeUpdateModal() {
+        document.getElementById('updateCardSetModal').style.display = 'none';
+    }
+
+    async function updateCardSet() {
+        const token = localStorage.getItem('jwt');
+        if (!token) {
+            alert("You are not logged in!");
+            return;
+        }
+        const setName = document.getElementById('updateSetName').value.trim();
+        const firstLanguage = document.getElementById('updateFirstLanguage').value;
+        const secondLanguage = document.getElementById('updateSecondLanguage').value;
+        const isPublic = document.getElementById('updateIsPublic').checked;
+        if (!setName) {
+            alert("Card set name cannot be empty!");
+            return;
+        }
+        const updatedCardSet = {
+            name: setName,
+            isPublic: isPublic,
+            firstLanguage: firstLanguage,
+            secondLanguage: secondLanguage
+        };
+        try {
+            const response = await fetch(`/cardsets/${currentCardSetId}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updatedCardSet)
+            });
+            if (!response.ok) {
+                throw new Error("Failed to update card set");
+            }
+            closeUpdateModal();
+            renderLibraryCardSets();
+        } catch (error) {
+            console.error(error);
+            alert("Error updating card set");
+        }
+    }
+
+    async function deleteCardSet(cardSetId) {
+        const token = localStorage.getItem('jwt');
+        if (!token) {
+            alert("You are not logged in!");
+            return;
+        }
+        try {
+            const response = await fetch(`/cardsets/${cardSetId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            });
+            if (!response.ok) {
+                throw new Error("Failed to delete card set");
+            }
+            renderLibraryCardSets();
+        } catch (error) {
+            console.error(error);
+            alert("Error deleting card set");
+        }
+    }
+
     function populateLanguageDropdowns() {
         const languages = [
             "English", "Spanish", "French", "German", "Russian", "Chinese", "Arabic", "Italian",
@@ -530,9 +632,13 @@
         ];
         const firstLangSelect = document.getElementById('firstLanguage');
         const secondLangSelect = document.getElementById('secondLanguage');
+        const updateFirstLangSelect = document.getElementById('updateFirstLanguage');
+        const updateSecondLangSelect = document.getElementById('updateSecondLanguage');
         languages.forEach(lang => {
             firstLangSelect.innerHTML += `<option value="${lang}">${lang}</option>`;
             secondLangSelect.innerHTML += `<option value="${lang}">${lang}</option>`;
+            updateFirstLangSelect.innerHTML += `<option value="${lang}">${lang}</option>`;
+            updateSecondLangSelect.innerHTML += `<option value="${lang}">${lang}</option>`;
         });
     }
 
@@ -569,7 +675,6 @@
             let accessTypeHTML = '';
 
             if (set.accessType === 'OWNER' || set.accessType === 'ACCESSIBLE') {
-                // Show access type for OWNER or ACCESSIBLE card sets
                 accessTypeHTML = `<div class="access-type">${set.accessType}</div>`;
             } else if (set.accessType === 'PUBLIC') {
                 buttonHTML = `<button class="btn" onclick="requestAccess('${set.id}')">Send Request</button>`;
@@ -632,6 +737,10 @@
             <div class="cardset" onclick="openCardSet('${set.id}')">
                 <h3>${set.name}</h3>
                 <div class="access-type">${set.accessType}</div>
+                <div class="card-actions">
+                    <button class="btn update-btn" onclick="event.stopPropagation(); openUpdateModal('${set.id}')">✏️ Update</button>
+                    <button class="btn delete-btn" onclick="event.stopPropagation(); deleteCardSet('${set.id}')">🗑️ Delete</button>
+                </div>
             </div>
         `).join('');
     }

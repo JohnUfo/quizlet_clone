@@ -33,10 +33,17 @@ public class ViewController {
         return "dashboard";
     }
 
-
+    @Operation(summary = "Show Cards Page")
     @GetMapping("/cards")
     public String getCardsPage(@RequestParam(name = "cardSetId") Long cardSetId, Model model) {
         model.addAttribute("cardSetId", cardSetId);
         return "cards";
+    }
+
+    @Operation(summary = "Show View All Cards Page")
+    @GetMapping("/view-cards")
+    public String getViewAllCardsPage(@RequestParam(name = "cardSetId") Long cardSetId, Model model) {
+        model.addAttribute("cardSetId", cardSetId);
+        return "view-cards";
     }
 }

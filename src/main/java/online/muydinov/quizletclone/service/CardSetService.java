@@ -34,7 +34,7 @@ public class CardSetService {
         String username = myUserDetailsService.getUsername();
         Long currentUserId = myUserDetailsService.getUserIdByUsername(username);
 
-        return cardSetRepository.findPublicAndAccessibleCardsets(cardSetId,currentUserId);
+        return cardSetRepository.findPublicAndAccessibleCardsets(cardSetId, currentUserId);
     }
 
     public CardSetDTO createCardSet(CardSetDTO cardSetDTO) {
@@ -51,7 +51,7 @@ public class CardSetService {
         cardSet.setFirstLanguage(cardSetDTO.getFirstLanguage());
         cardSet.setSecondLanguage(cardSetDTO.getSecondLanguage());
 
-        return convertCardSetToDTO(cardSetRepository.save(cardSet),"NO");
+        return convertCardSetToDTO(cardSetRepository.save(cardSet));
     }
 
     public void deleteCardSet(Long id) {
@@ -67,7 +67,7 @@ public class CardSetService {
         cardSet.setFirstLanguage(cardSetDTO.getFirstLanguage());
         cardSet.setSecondLanguage(cardSetDTO.getSecondLanguage());
 
-        return convertCardSetToDTO(cardSetRepository.save(cardSet),"NO");
+        return convertCardSetToDTO(cardSetRepository.save(cardSet));
     }
 
     private CardSet findCardSetByIdAndVerifyOwner(Long id) {
@@ -75,15 +75,15 @@ public class CardSetService {
                 .orElseThrow(() -> new UnauthorizedAccessException("Access denied or Card Set not found"));
     }
 
-    private CardSetDTO convertCardSetToDTO(CardSet cardSet,String accessible) {
+    private CardSetDTO convertCardSetToDTO(CardSet cardSet) {
         return new CardSetDTO(
                 cardSet.getId(),
                 cardSet.getName(),
                 cardSet.isPublic(),
-                cardSet.getFirstLanguage().toString(),
-                cardSet.getSecondLanguage().toString(),
+                cardSet.getFirstLanguage(),
+                cardSet.getSecondLanguage(),
                 cardSet.getCreator().getId(),
-                accessible
+                null
         );
     }
 }

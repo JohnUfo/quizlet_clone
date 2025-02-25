@@ -37,7 +37,7 @@ public class CardSet {
     @JoinColumn(name = "creator_id", nullable = false)
     private User creator;
 
-    @ManyToMany(fetch = FetchType.LAZY) // Use lazy fetching
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "accessible_sets",
             joinColumns = @JoinColumn(name = "set_id"),
