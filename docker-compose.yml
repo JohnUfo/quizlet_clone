@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/quizlet_clone
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 2373
+      SPRING_JPA_HIBERNATE_DDL-AUTO: update
+
+  db:
+    image: postgres:15
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: quizlet_clone
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 2373
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+volumes:
+  db-data:
