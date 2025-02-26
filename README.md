@@ -35,7 +35,7 @@ Quizlet Clone is a web-based platform designed to help users create, share, and 
 ## 🚀 Installation & Setup
 ### **Prerequisites**
 Make sure you have the following installed on your system:
-- **Java 17+**
+- **Java 21+**
 - **Maven**
 - **PostgreSQL** (Ensure the database is running)
 - **Git**
