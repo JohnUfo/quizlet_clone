@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View All Cards - Quizlet Clone</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #1e1e2e, #3a3a5a);
+            color: white;
+            text-align: center;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .header {
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .back-btn {
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(106, 17, 203, 0.4);
+        }
+
+        .back-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(106, 17, 203, 0.6);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            margin-top: 80px; /* To avoid overlap with the header */
+        }
+
+        h2 {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .card-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .card-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: left;
+        }
+
+        .card-item h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .card-item p {
+            margin: 5px 0 0;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <button class="back-btn" onclick="window.location.href='/cards?cardSetId=${cardSetId}'">← Back to Cards</button>
+</div>
+
+<div class="container">
+    <h2>All Cards</h2>
+    <div class="card-list" id="cardList">
+        <!-- Cards will be dynamically inserted here -->
+    </div>
+</div>
+
+<script>
+    const token = localStorage.getItem("jwt");
+
+    if (!token) {
+        alert("You are not logged in!");
+        window.location.href = "/login";
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const cardSetId = urlParams.get("cardSetId");
+
+    if (!cardSetId) {
+        alert("Invalid Card Set ID!");
+        window.location.href = "dashboard";
+    }
+
+    async function fetchCards() {
+        try {
+            const response = await fetch(`/cards/allCards/${cardSetId}`, {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch cards: ${response.status}`);
+            }
+
+            const cards = await response.json();
+            const cardList = document.getElementById("cardList");
+            cardList.innerHTML = cards.map(card => `
+                <div class="card-item">
+                    <h3>${card.term}</h3>
+                    <p>${card.definition}</p>
+                </div>
+            `).join('');
+        } catch (error) {
+            console.error("Error fetching cards:", error);
+            alert("Something went wrong. Try again later.");
+        }
+    }
+
+    fetchCards();
+</script>
+</body>
+</html>

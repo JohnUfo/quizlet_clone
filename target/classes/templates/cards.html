@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Card Set - Quizlet Clone</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #1e1e2e, #3a3a5a);
+            color: white;
+            text-align: center;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .header {
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .back-btn {
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(106, 17, 203, 0.4);
+        }
+
+        .back-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(106, 17, 203, 0.6);
+        }
+
+        .add-card-btn {
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(106, 17, 203, 0.4);
+            display: none; /* Initially hidden */
+        }
+
+        .add-card-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(106, 17, 203, 0.6);
+        }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.1);
+            min-width: 160px;
+            box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .dropdown-content button {
+            color: white;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            background: transparent;
+            border: none;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .dropdown-content button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            margin-top: 80px; /* To avoid overlap with the header */
+        }
+
+        h2 {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .card-container {
+            position: relative;
+            width: 450px; /* Increased width */
+            height: 350px; /* Increased height */
+            margin: 0 auto;
+            perspective: 1000px;
+        }
+
+        .card {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            transform-style: preserve-3d;
+            transition: transform 0.5s ease-in-out;
+        }
+
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            font-size: 28px; /* Increased font size */
+            font-weight: 600;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, #0084ff, #00c2ff);
+            color: white;
+        }
+
+        .card-back {
+            background: linear-gradient(135deg, #ffbb00, #ff7700);
+            color: white;
+            transform: rotateY(180deg);
+            padding-bottom: 40px; /* Add extra padding at the bottom */
+        }
+
+        .info-text {
+            font-size: 18px;
+            font-weight: 400;
+            margin-top: 10px;
+            opacity: 0.8;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            width: 450px; /* Adjusted width to match the card */
+            margin: 20px auto 0;
+        }
+
+        .navigation button {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .navigation button:hover {
+            transform: scale(1.2);
+        }
+
+        .card-counter {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .edit-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 16px;
+            padding: 8px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+            z-index: 10; /* Ensure it stays on top */
+            display: none; /* Initially hidden */
+        }
+
+        .edit-button:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Modal Styling */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            color: black;
+            padding: 30px;
+            border-radius: 12px;
+            width: 400px;
+            text-align: left;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal h3 {
+            margin-top: 0;
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .modal input, .modal textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .modal button {
+            width: 100%;
+            margin-top: 10px;
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            color: white;
+        }
+
+        .modal button.cancel {
+            background: linear-gradient(135deg, #ff4b5c, #ff6b81);
+        }
+
+        #noCardsMessage {
+            font-size: 18px;
+            font-weight: 400;
+            margin-top: 20px;
+            opacity: 0.8;
+            display: none; /* Initially hidden */
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <button class="back-btn" onclick="window.location.href='/dashboard'">← Back to Dashboard</button>
+    <div class="dropdown">
+        <button class="add-card-btn">⚙️ Options</button>
+        <div class="dropdown-content">
+            <button onclick="openEditModal()">✏️ Edit</button>
+            <button onclick="window.location.href='/view-cards?cardSetId=${cardSetId}'">📄 View All Cards</button>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <p class="info-text">Click a card to flip it!</p>
+    <div class="card-container">
+        <div class="card" onclick="flipCard()">
+            <div class="card-front" id="cardFront">Loading...</div>
+            <div class="card-back" id="cardBack">Loading...</div>
+            <button class="edit-button" onclick="openEditModal()">✏️</button>
+        </div>
+    </div>
+    <div class="navigation">
+        <button onclick="showPreviousCard()">◄</button>
+        <span class="card-counter" id="cardCounter">0/0</span>
+        <button onclick="showNextCard()">►</button>
+    </div>
+    <p id="noCardsMessage">No cards found. Add some cards to get started!</p>
+</div>
+
+<!-- Edit Card Modal -->
+<div id="editCardModal" class="modal">
+    <div class="modal-content">
+        <h3>Edit Card</h3>
+        <textarea id="editFrontText" placeholder="Front of the card"></textarea>
+        <textarea id="editBackText" placeholder="Back of the card"></textarea>
+        <button onclick="updateCard()">Update</button>
+        <button class="cancel" onclick="closeEditModal()">Cancel</button>
+    </div>
+</div>
+
+<!-- Add Card Modal -->
+<div id="addCardModal" class="modal">
+    <div class="modal-content">
+        <h3>Add New Card</h3>
+        <textarea id="addFrontText" placeholder="Front of the card"></textarea>
+        <textarea id="addBackText" placeholder="Back of the card"></textarea>
+        <button onclick="addCard()">Add Card</button>
+        <button class="cancel" onclick="closeAddCardModal()">Cancel</button>
+    </div>
+</div>
+
+<script>
+    const token = localStorage.getItem("jwt");
+
+    if (!token) {
+        alert("You are not logged in!");
+        window.location.href = "/login";
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const cardSetId = urlParams.get("cardSetId");
+
+    if (!cardSetId) {
+        alert("Invalid Card Set ID!");
+        window.location.href = "dashboard";
+    }
+
+    let cards = [];
+    let currentCardIndex = 0;
+    let cardSetAccessType = null;
+
+    async function fetchCards() {
+        try {
+            // Fetch the card set details
+            const cardSetResponse = await fetch(`/cardsets/${cardSetId}`, {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                }
+            });
+
+            if (!cardSetResponse.ok) {
+                throw new Error("Failed to fetch card set details");
+            }
+
+            const cardSetDetails = await cardSetResponse.json();
+            cardSetAccessType = cardSetDetails.accessType;
+
+            // Show or hide the add card button based on access type
+            const addCardButton = document.querySelector(".add-card-btn");
+            if (cardSetAccessType === "OWNER") {
+                addCardButton.style.display = "block";
+            } else {
+                addCardButton.style.display = "none";
+            }
+
+            // Fetch the cards
+            const cardsResponse = await fetch(`/cards/allCards/${cardSetId}`, {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                }
+            });
+
+            if (!cardsResponse.ok) {
+                throw new Error(`Failed to fetch cards: ${cardsResponse.status}`);
+            }
+
+            cards = await cardsResponse.json();
+            if (cards.length > 0) {
+                updateCardDisplay();
+                document.querySelector(".card-container").style.display = "block";
+                document.querySelector(".navigation").style.display = "flex";
+                document.getElementById("noCardsMessage").style.display = "none";
+            } else {
+                document.querySelector(".card-container").style.display = "none";
+                document.querySelector(".navigation").style.display = "none";
+                document.getElementById("noCardsMessage").style.display = "block";
+            }
+        } catch (error) {
+            console.error("Error fetching cards:", error);
+            alert("Something went wrong. Try again later.");
+        }
+    }
+
+    function updateCardDisplay() {
+        const card = cards[currentCardIndex];
+        document.getElementById("cardFront").textContent = card.term;
+        document.getElementById("cardBack").textContent = card.definition;
+        document.getElementById("cardCounter").textContent = `${currentCardIndex + 1}/${cards.length}`;
+
+        // Show or hide the edit button based on access type
+        const editButton = document.querySelector(".edit-button");
+        if (cardSetAccessType === "OWNER") {
+            editButton.style.display = "block";
+        } else {
+            editButton.style.display = "none";
+        }
+    }
+
+    function flipCard() {
+        const cardElement = document.querySelector(".card");
+        cardElement.classList.toggle("flipped");
+    }
+
+    function showNextCard() {
+        if (currentCardIndex < cards.length - 1) {
+            currentCardIndex++;
+            updateCardDisplay();
+        }
+    }
+
+    function showPreviousCard() {
+        if (currentCardIndex > 0) {
+            currentCardIndex--;
+            updateCardDisplay();
+        }
+    }
+
+    function openEditModal() {
+        const card = cards[currentCardIndex];
+        document.getElementById("editFrontText").value = card.term;
+        document.getElementById("editBackText").value = card.definition;
+        document.getElementById("editCardModal").style.display = "flex";
+    }
+
+    function closeEditModal() {
+        document.getElementById("editCardModal").style.display = "none";
+    }
+
+    function openAddCardModal() {
+        document.getElementById("addCardModal").style.display = "flex";
+    }
+
+    function closeAddCardModal() {
+        document.getElementById("addCardModal").style.display = "none";
+    }
+
+    async function addCard() {
+        const frontText = document.getElementById("addFrontText").value.trim();
+        const backText = document.getElementById("addBackText").value.trim();
+
+        if (!frontText || !backText) {
+            alert("Both front and back text are required!");
+            return;
+        }
+
+        const newCard = {
+            term: frontText,
+            definition: backText,
+            cardSetId: cardSetId
+        };
+
+        try {
+            const response = await fetch(`/cards`, {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(newCard)
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to add card");
+            }
+
+            const addedCard = await response.json();
+            cards.push(addedCard);
+            closeAddCardModal();
+            updateCardDisplay();
+        } catch (error) {
+            console.error("Error adding card:", error);
+            alert("Failed to add card. Please try again.");
+        }
+    }
+
+    async function updateCard() {
+        const frontText = document.getElementById("editFrontText").value.trim();
+        const backText = document.getElementById("editBackText").value.trim();
+
+        if (!frontText || !backText) {
+            alert("Both front and back text are required!");
+            return;
+        }
+
+        const cardDTO = {
+            term: frontText,
+            definition: backText
+        };
+
+        try {
+            const response = await fetch(`/cards/${cards[currentCardIndex].id}`, {
+                method: "PUT",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(cardDTO)
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to update card");
+            }
+
+            // Update the card in the local array
+            cards[currentCardIndex].term = frontText;
+            cards[currentCardIndex].definition = backText;
+
+            closeEditModal();
+            updateCardDisplay();
+        } catch (error) {
+            console.error("Error updating card:", error);
+            alert("Failed to update card. Please try again.");
+        }
+    }
+
+    fetchCards();
+</script>
+</body>
+</html>
