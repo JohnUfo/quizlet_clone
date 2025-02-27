@@ -1,12 +1,11 @@
 package online.muydinov.quizletclone.service;
 
-import lombok.RequiredArgsConstructor;
-import online.muydinov.quizletclone.record.CardSetRecord;
-import online.muydinov.quizletclone.record.UserRecord;
 import online.muydinov.quizletclone.entity.CardSet;
 import online.muydinov.quizletclone.entity.User;
 import online.muydinov.quizletclone.exceptions.UnauthorizedAccessException;
 import online.muydinov.quizletclone.exceptions.UserNotFoundException;
+import online.muydinov.quizletclone.record.CardSetRecord;
+import online.muydinov.quizletclone.record.UserRecord;
 import online.muydinov.quizletclone.repository.CardSetRepository;
 import online.muydinov.quizletclone.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -15,13 +14,18 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 @Transactional
 public class CardSetService {
 
     private final CardSetRepository cardSetRepository;
     private final MyUserDetailsService myUserDetailsService;
     private final UserRepository userRepository;
+
+    public CardSetService(CardSetRepository cardSetRepository, MyUserDetailsService myUserDetailsService, UserRepository userRepository) {
+        this.cardSetRepository = cardSetRepository;
+        this.myUserDetailsService = myUserDetailsService;
+        this.userRepository = userRepository;
+    }
 
     public List<CardSetRecord> getAllCardSets() {
         String username = myUserDetailsService.getUsername();

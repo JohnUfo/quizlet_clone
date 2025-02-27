@@ -1,6 +1,5 @@
 package online.muydinov.quizletclone.config;
 
-import lombok.RequiredArgsConstructor;
 import online.muydinov.quizletclone.service.MyUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,11 +18,15 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-@RequiredArgsConstructor
 public class SecurityConfig {
 
     private final MyUserDetailsService userDetailsService;
     private final JwtFilter jwtFilter;
+
+    public SecurityConfig(MyUserDetailsService userDetailsService, JwtFilter jwtFilter) {
+        this.userDetailsService = userDetailsService;
+        this.jwtFilter = jwtFilter;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -31,7 +34,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(request -> request
                         .requestMatchers("/login", "/register").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
-                        .requestMatchers("/","index.html","register.html","login.html","dashboard.html","dashboard","cards").permitAll()
+                        .requestMatchers("/", "index.html", "register.html", "login.html", "dashboard.html", "dashboard", "cards").permitAll()
                         .requestMatchers(HttpMethod.POST, "/cardsets/**").authenticated()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

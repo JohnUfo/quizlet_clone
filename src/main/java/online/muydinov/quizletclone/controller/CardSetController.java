@@ -1,6 +1,5 @@
 package online.muydinov.quizletclone.controller;
 
-import lombok.RequiredArgsConstructor;
 import online.muydinov.quizletclone.record.CardSetRecord;
 import online.muydinov.quizletclone.service.CardSetService;
 import org.springframework.http.HttpStatus;
@@ -11,10 +10,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/cardsets")
-@RequiredArgsConstructor
 public class CardSetController {
 
     private final CardSetService cardSetService;
+
+    public CardSetController(CardSetService cardSetService) {
+        this.cardSetService = cardSetService;
+    }
 
     @GetMapping("/all")
     public ResponseEntity<List<CardSetRecord>> getAllCardSets() {

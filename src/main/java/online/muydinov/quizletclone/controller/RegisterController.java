@@ -2,7 +2,6 @@ package online.muydinov.quizletclone.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
 import online.muydinov.quizletclone.record.RegisterRequestRecord;
 import online.muydinov.quizletclone.service.RegisterService;
 import online.muydinov.quizletclone.service.UserService;
@@ -16,12 +15,16 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 @RequestMapping("/register")
-@RequiredArgsConstructor
 @Tag(name = "Authentication", description = "Endpoints for user registration")
 public class RegisterController {
 
     private final RegisterService registerService;
     private final UserService userService;
+
+    public RegisterController(RegisterService registerService, UserService userService) {
+        this.registerService = registerService;
+        this.userService = userService;
+    }
 
     @Operation(summary = "User Registration", description = "Registers a new user in the system.")
     @PostMapping

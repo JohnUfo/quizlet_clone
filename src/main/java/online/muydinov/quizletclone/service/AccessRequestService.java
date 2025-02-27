@@ -1,15 +1,14 @@
 package online.muydinov.quizletclone.service;
 
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
-import online.muydinov.quizletclone.record.AccessRequestRecord;
-import online.muydinov.quizletclone.record.Response;
-import online.muydinov.quizletclone.record.UserRecord;
 import online.muydinov.quizletclone.entity.AccessRequest;
 import online.muydinov.quizletclone.entity.CardSet;
 import online.muydinov.quizletclone.entity.User;
 import online.muydinov.quizletclone.exceptions.CardSetNotFoundException;
 import online.muydinov.quizletclone.exceptions.UnauthorizedAccessException;
+import online.muydinov.quizletclone.record.AccessRequestRecord;
+import online.muydinov.quizletclone.record.Response;
+import online.muydinov.quizletclone.record.UserRecord;
 import online.muydinov.quizletclone.repository.AccessRequestRepository;
 import online.muydinov.quizletclone.repository.CardSetRepository;
 import online.muydinov.quizletclone.repository.UserRepository;
@@ -21,13 +20,19 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class AccessRequestService {
 
     private final AccessRequestRepository accessRequestRepository;
     private final CardSetRepository cardSetRepository;
     private final UserRepository userRepository;
     private final MyUserDetailsService myUserDetailsService;
+
+    public AccessRequestService(AccessRequestRepository accessRequestRepository, CardSetRepository cardSetRepository, UserRepository userRepository, MyUserDetailsService myUserDetailsService) {
+        this.accessRequestRepository = accessRequestRepository;
+        this.cardSetRepository = cardSetRepository;
+        this.userRepository = userRepository;
+        this.myUserDetailsService = myUserDetailsService;
+    }
 
     public Response requestAccess(Long cardSetId) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();

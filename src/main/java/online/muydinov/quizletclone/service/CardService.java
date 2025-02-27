@@ -1,9 +1,8 @@
 package online.muydinov.quizletclone.service;
 
-import lombok.RequiredArgsConstructor;
-import online.muydinov.quizletclone.record.CardRecord;
 import online.muydinov.quizletclone.entity.Card;
 import online.muydinov.quizletclone.entity.CardSet;
+import online.muydinov.quizletclone.record.CardRecord;
 import online.muydinov.quizletclone.repository.CardRepository;
 import online.muydinov.quizletclone.repository.CardSetRepository;
 import org.springframework.stereotype.Service;
@@ -13,11 +12,15 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class CardService {
 
     private final CardRepository cardRepository;
     private final CardSetRepository cardSetRepository;
+
+    public CardService(CardRepository cardRepository, CardSetRepository cardSetRepository) {
+        this.cardRepository = cardRepository;
+        this.cardSetRepository = cardSetRepository;
+    }
 
     public List<CardRecord> getAllCardsByCardSetId(Long cardSetId) {
         return cardRepository.findByCardSetId(cardSetId).stream()
@@ -29,7 +32,7 @@ public class CardService {
         CardSet cardSet = cardSetRepository.findById(cardSetId)
                 .orElseThrow(() -> new RuntimeException("CardSet not found"));
 
-        Card card = new Card(null,CardRecord.term(),CardRecord.definition(),cardSet);
+        Card card = new Card(null, CardRecord.term(), CardRecord.definition(), cardSet);
         Card savedCard = cardRepository.save(card);
         return convertToRecord(savedCard);
     }

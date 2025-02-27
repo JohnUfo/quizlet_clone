@@ -1,6 +1,5 @@
 package online.muydinov.quizletclone.service;
 
-import lombok.RequiredArgsConstructor;
 import online.muydinov.quizletclone.record.LoginRequestRecord;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -8,11 +7,15 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.stereotype.Service;
 
 @Service
-@RequiredArgsConstructor
 public class LoginService {
 
     private final AuthenticationManager authManager;
     private final JWTService jwtService;
+
+    public LoginService(AuthenticationManager authManager, JWTService jwtService) {
+        this.authManager = authManager;
+        this.jwtService = jwtService;
+    }
 
     public String verify(LoginRequestRecord LoginRequestRecord) {
         try {

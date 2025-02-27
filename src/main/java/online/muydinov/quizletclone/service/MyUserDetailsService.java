@@ -1,6 +1,5 @@
 package online.muydinov.quizletclone.service;
 
-import lombok.RequiredArgsConstructor;
 import online.muydinov.quizletclone.entity.UserPrincipal;
 import online.muydinov.quizletclone.repository.UserRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -10,10 +9,13 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
-@RequiredArgsConstructor
 public class MyUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
+
+    public MyUserDetailsService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

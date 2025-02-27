@@ -1,6 +1,5 @@
 package online.muydinov.quizletclone.controller;
 
-import lombok.RequiredArgsConstructor;
 import online.muydinov.quizletclone.record.AccessRequestRecord;
 import online.muydinov.quizletclone.record.Response;
 import online.muydinov.quizletclone.service.AccessRequestService;
@@ -11,10 +10,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/request")
-@RequiredArgsConstructor
 public class AccessRequestController {
 
     private final AccessRequestService accessRequestService;
+
+    public AccessRequestController(AccessRequestService accessRequestService) {
+        this.accessRequestService = accessRequestService;
+    }
 
     @PostMapping("/{cardSetId}/request-access")
     public ResponseEntity<Response> requestAccess(@PathVariable Long cardSetId) {

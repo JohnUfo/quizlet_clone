@@ -1,19 +1,22 @@
 package online.muydinov.quizletclone.service;
 
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
-import online.muydinov.quizletclone.record.RegisterRequestRecord;
 import online.muydinov.quizletclone.entity.User;
+import online.muydinov.quizletclone.record.RegisterRequestRecord;
 import online.muydinov.quizletclone.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-@RequiredArgsConstructor
 public class RegisterService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+
+    public RegisterService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @Transactional
     public void register(RegisterRequestRecord RegisterRequestRecord) {
