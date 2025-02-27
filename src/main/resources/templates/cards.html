@@ -521,7 +521,7 @@
             return;
         }
 
-        const cardDTO = {
+        const CardRecord = {
             term: frontText,
             definition: backText
         };
@@ -533,7 +533,7 @@
                     "Authorization": `Bearer ${token}`,
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify(cardDTO)
+                body: JSON.stringify(CardRecord)
             });
 
             if (!response.ok) {

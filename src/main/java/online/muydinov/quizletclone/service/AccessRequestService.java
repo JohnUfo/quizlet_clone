@@ -2,9 +2,9 @@ package online.muydinov.quizletclone.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import online.muydinov.quizletclone.dto.AccessRequestDTO;
-import online.muydinov.quizletclone.dto.Response;
-import online.muydinov.quizletclone.dto.UserDTO;
+import online.muydinov.quizletclone.record.AccessRequestRecord;
+import online.muydinov.quizletclone.record.Response;
+import online.muydinov.quizletclone.record.UserRecord;
 import online.muydinov.quizletclone.entity.AccessRequest;
 import online.muydinov.quizletclone.entity.CardSet;
 import online.muydinov.quizletclone.entity.User;
@@ -32,25 +32,25 @@ public class AccessRequestService {
     public Response requestAccess(Long cardSetId) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        UserDTO requester = userRepository.findUserDTOByUsername(username)
+        UserRecord requester = userRepository.findUserRecordByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         User user = new User();
-        user.setId(requester.getId());
+        user.setId(requester.id());
 
         CardSet cardSet = cardSetRepository.findById(cardSetId)
                 .orElseThrow(() -> new CardSetNotFoundException("Card set not found"));
 
-        if (cardSet.getCreator().getId().equals(requester.getId())) {
+        if (cardSet.getCreator().getId().equals(requester.id())) {
             return new Response("message", "You are the creator of this card set.");
         }
 
-        if (cardSet.getApprovedUsers().stream().anyMatch(u -> u.getId().equals(requester.getId()))) {
+        if (cardSet.getApprovedUsers().stream().anyMatch(u -> u.getId().equals(requester.id()))) {
             return new Response("message", "You already have access to this card set.");
         }
 
         Optional<AccessRequest> existingRequest = accessRequestRepository
-                .findByCardSetIdAndRequesterId(cardSetId, requester.getId());
+                .findByCardSetIdAndRequesterId(cardSetId, requester.id());
 
         if (existingRequest.isPresent()) {
             AccessRequest request = existingRequest.get();
@@ -74,45 +74,33 @@ public class AccessRequestService {
 
     @Transactional
     public Response respondToRequest(Long cardSetId, Long requestId, boolean approve) {
-        // Fetch the existing AccessRequest from the database
         AccessRequest request = accessRequestRepository.findById(requestId)
                 .orElseThrow(() -> new RuntimeException("Access request not found"));
 
-        // Validate that the request belongs to the specified cardSetId
         if (!request.getCardSet().getId().equals(cardSetId)) {
             throw new RuntimeException("Invalid cardSetId for the given request");
         }
 
-        // Get the current user's details
         String username = myUserDetailsService.getUsername();
         Long requesterId = myUserDetailsService.getUserIdByUsername(username);
 
-        // Check if the current user is authorized to respond to this request
         if (!request.getCardSet().getCreator().getId().equals(requesterId)) {
             throw new UnauthorizedAccessException("You are not authorized to respond to this request");
         }
 
         if (approve) {
-            // Approve the request
             request.setStatus("APPROVED");
-
-            // Add the user to the approvedUsers set
             cardSetRepository.addApprovedUser(cardSetId, request.getRequester().getId());
-
-            // Delete the access request after approval
             accessRequestRepository.delete(request);
         } else {
-            // Reject the request
             request.setStatus("REJECTED");
-
-            // Save the updated request (no need to create a new one)
             accessRequestRepository.save(request);
         }
 
         return new Response("message", "Request has been " + (approve ? "approved" : "rejected"));
     }
 
-    public List<AccessRequestDTO> getPendingRequests(Long cardsetId) {
+    public List<AccessRequestRecord> getPendingRequests(Long cardsetId) {
         String creatorUsername = cardSetRepository.findOwnerUsernameByCardSetId(cardsetId)
                 .orElseThrow(() -> new CardSetNotFoundException("Card Set not found"));
 
@@ -123,17 +111,17 @@ public class AccessRequestService {
 
         return accessRequestRepository.findPendingRequestsByCardSetId(cardsetId, "PENDING")
                 .stream()
-                .map(this::convertToDTO)
+                .map(this::convertToRecord)
                 .collect(Collectors.toList());
     }
 
-    private AccessRequestDTO convertToDTO(AccessRequest request) {
-        AccessRequestDTO dto = new AccessRequestDTO();
-        dto.setId(request.getId());
-        dto.setCardSetId(request.getCardSet().getId());
-        dto.setCardSetName(request.getCardSet().getName());
-        dto.setRequesterUsername(request.getRequester().getUsername());
-        dto.setStatus(request.getStatus());
-        return dto;
+    private AccessRequestRecord convertToRecord(AccessRequest request) {
+        return new AccessRequestRecord(
+                request.getId(),
+                request.getCardSet().getId(),
+                request.getCardSet().getName(),
+                request.getRequester().getUsername(),
+                request.getStatus()
+        );
     }
 }

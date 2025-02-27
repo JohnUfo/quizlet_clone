@@ -1,7 +1,7 @@
 package online.muydinov.quizletclone.controller;
 
 import lombok.RequiredArgsConstructor;
-import online.muydinov.quizletclone.dto.CardSetDTO;
+import online.muydinov.quizletclone.record.CardSetRecord;
 import online.muydinov.quizletclone.service.CardSetService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,19 +17,19 @@ public class CardSetController {
     private final CardSetService cardSetService;
 
     @GetMapping("/all")
-    public ResponseEntity<List<CardSetDTO>> getAllCardSets() {
-        List<CardSetDTO> allCardSets = cardSetService.getAllCardSets();
+    public ResponseEntity<List<CardSetRecord>> getAllCardSets() {
+        List<CardSetRecord> allCardSets = cardSetService.getAllCardSets();
         return ResponseEntity.ok(allCardSets);
     }
 
     @PostMapping
-    public ResponseEntity<CardSetDTO> createCardSet(@RequestBody CardSetDTO cardSetDTO) {
+    public ResponseEntity<CardSetRecord> createCardSet(@RequestBody CardSetRecord cardSetRecord) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(cardSetService.createCardSet(cardSetDTO));
+                .body(cardSetService.createCardSet(cardSetRecord));
     }
 
     @GetMapping("/{cardSetId}")
-    public ResponseEntity<CardSetDTO> getCardSetById(@PathVariable Long cardSetId) {
+    public ResponseEntity<CardSetRecord> getCardSetById(@PathVariable Long cardSetId) {
         return ResponseEntity.ok(cardSetService.getCardSetById(cardSetId));
     }
 
@@ -40,7 +40,7 @@ public class CardSetController {
     }
 
     @PutMapping("/{cardSetId}")
-    public ResponseEntity<CardSetDTO> updateCardSet(@PathVariable Long cardSetId, @RequestBody CardSetDTO cardSetDTO) {
-        return ResponseEntity.ok(cardSetService.updateCardSet(cardSetId, cardSetDTO));
+    public ResponseEntity<CardSetRecord> updateCardSet(@PathVariable Long cardSetId, @RequestBody CardSetRecord cardSetRecord) {
+        return ResponseEntity.ok(cardSetService.updateCardSet(cardSetId, cardSetRecord));
     }
 }

@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: online.muydinov.quizletclone.CardSetControllerTest
+-------------------------------------------------------------------------------
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.770 s -- in online.muydinov.quizletclone.CardSetControllerTest

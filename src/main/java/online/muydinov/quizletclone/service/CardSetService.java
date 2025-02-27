@@ -1,8 +1,8 @@
 package online.muydinov.quizletclone.service;
 
 import lombok.RequiredArgsConstructor;
-import online.muydinov.quizletclone.dto.CardSetDTO;
-import online.muydinov.quizletclone.dto.UserDTO;
+import online.muydinov.quizletclone.record.CardSetRecord;
+import online.muydinov.quizletclone.record.UserRecord;
 import online.muydinov.quizletclone.entity.CardSet;
 import online.muydinov.quizletclone.entity.User;
 import online.muydinov.quizletclone.exceptions.UnauthorizedAccessException;
@@ -23,35 +23,35 @@ public class CardSetService {
     private final MyUserDetailsService myUserDetailsService;
     private final UserRepository userRepository;
 
-    public List<CardSetDTO> getAllCardSets() {
+    public List<CardSetRecord> getAllCardSets() {
         String username = myUserDetailsService.getUsername();
         Long currentUserId = myUserDetailsService.getUserIdByUsername(username);
 
         return cardSetRepository.findAllPublicAndAccessibleCardsets(currentUserId);
     }
 
-    public CardSetDTO getCardSetById(Long cardSetId) {
+    public CardSetRecord getCardSetById(Long cardSetId) {
         String username = myUserDetailsService.getUsername();
         Long currentUserId = myUserDetailsService.getUserIdByUsername(username);
 
         return cardSetRepository.findPublicAndAccessibleCardsets(cardSetId, currentUserId);
     }
 
-    public CardSetDTO createCardSet(CardSetDTO cardSetDTO) {
-        UserDTO creatorDTO = userRepository.findUserDTOByUsername(myUserDetailsService.getUsername())
+    public CardSetRecord createCardSet(CardSetRecord cardSetRecord) {
+        UserRecord creatorRecord = userRepository.findUserRecordByUsername(myUserDetailsService.getUsername())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         User creator = new User();
-        creator.setId(creatorDTO.getId());
+        creator.setId(creatorRecord.id());
 
         CardSet cardSet = new CardSet();
-        cardSet.setName(cardSetDTO.getName());
-        cardSet.setPublic(cardSetDTO.getIsPublic());
+        cardSet.setName(cardSetRecord.name());
+        cardSet.setPublic(cardSetRecord.isPublic());
         cardSet.setCreator(creator);
-        cardSet.setFirstLanguage(cardSetDTO.getFirstLanguage());
-        cardSet.setSecondLanguage(cardSetDTO.getSecondLanguage());
+        cardSet.setFirstLanguage(cardSetRecord.firstLanguage());
+        cardSet.setSecondLanguage(cardSetRecord.secondLanguage());
 
-        return convertCardSetToDTO(cardSetRepository.save(cardSet));
+        return convertCardSetToRecord(cardSetRepository.save(cardSet));
     }
 
     public void deleteCardSet(Long id) {
@@ -59,30 +59,31 @@ public class CardSetService {
         cardSetRepository.delete(cardSet);
     }
 
-    public CardSetDTO updateCardSet(Long id, CardSetDTO cardSetDTO) {
+    public CardSetRecord updateCardSet(Long id, CardSetRecord cardSetRecord) {
         CardSet cardSet = findCardSetByIdAndVerifyOwner(id);
 
-        cardSet.setName(cardSetDTO.getName());
-        cardSet.setPublic(cardSetDTO.getIsPublic());
-        cardSet.setFirstLanguage(cardSetDTO.getFirstLanguage());
-        cardSet.setSecondLanguage(cardSetDTO.getSecondLanguage());
+        cardSet.setName(cardSetRecord.name());
+        cardSet.setPublic(cardSetRecord.isPublic());
+        cardSet.setFirstLanguage(cardSetRecord.firstLanguage());
+        cardSet.setSecondLanguage(cardSetRecord.secondLanguage());
 
-        return convertCardSetToDTO(cardSetRepository.save(cardSet));
+        return convertCardSetToRecord(cardSetRepository.save(cardSet));
     }
 
-    private CardSet findCardSetByIdAndVerifyOwner(Long id) {
+    public CardSet findCardSetByIdAndVerifyOwner(Long id) {
         return cardSetRepository.findByIdAndOwner(id, myUserDetailsService.getUsername())
                 .orElseThrow(() -> new UnauthorizedAccessException("Access denied or Card Set not found"));
     }
 
-    private CardSetDTO convertCardSetToDTO(CardSet cardSet) {
-        return new CardSetDTO(
+    private CardSetRecord convertCardSetToRecord(CardSet cardSet) {
+        return new CardSetRecord(
                 cardSet.getId(),
                 cardSet.getName(),
                 cardSet.isPublic(),
                 cardSet.getFirstLanguage(),
                 cardSet.getSecondLanguage(),
                 cardSet.getCreator().getId(),
+                null,
                 null
         );
     }

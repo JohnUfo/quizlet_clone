@@ -3,7 +3,7 @@ package online.muydinov.quizletclone.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import online.muydinov.quizletclone.dto.RegisterRequestDTO;
+import online.muydinov.quizletclone.record.RegisterRequestRecord;
 import online.muydinov.quizletclone.service.RegisterService;
 import online.muydinov.quizletclone.service.UserService;
 import org.springframework.http.HttpStatus;
@@ -26,8 +26,8 @@ public class RegisterController {
     @Operation(summary = "User Registration", description = "Registers a new user in the system.")
     @PostMapping
     @ResponseBody
-    public ResponseEntity<String> register(@RequestBody RegisterRequestDTO registerRequest) {
-        if (userService.existsByUsername(registerRequest.getUsername())) {
+    public ResponseEntity<String> register(@RequestBody RegisterRequestRecord registerRequest) {
+        if (userService.existsByUsername(registerRequest.username())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("User already exists");
         }
         registerService.register(registerRequest);

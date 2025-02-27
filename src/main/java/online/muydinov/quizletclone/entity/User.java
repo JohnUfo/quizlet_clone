@@ -40,6 +40,10 @@ public class User {
     @JsonIgnore
     private Set<CardSet> accessibleSets;
 
+    public User(Long userId) {
+
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

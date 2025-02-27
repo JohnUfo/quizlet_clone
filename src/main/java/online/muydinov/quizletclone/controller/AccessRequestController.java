@@ -1,8 +1,8 @@
 package online.muydinov.quizletclone.controller;
 
 import lombok.RequiredArgsConstructor;
-import online.muydinov.quizletclone.dto.AccessRequestDTO;
-import online.muydinov.quizletclone.dto.Response;
+import online.muydinov.quizletclone.record.AccessRequestRecord;
+import online.muydinov.quizletclone.record.Response;
 import online.muydinov.quizletclone.service.AccessRequestService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,9 +22,9 @@ public class AccessRequestController {
     }
 
     @GetMapping("/{cardSetId}/requests")
-    public ResponseEntity<List<AccessRequestDTO>> getPendingRequests(
+    public ResponseEntity<List<AccessRequestRecord>> getPendingRequests(
             @PathVariable Long cardSetId) {
-        List<AccessRequestDTO> pendingRequests = accessRequestService.getPendingRequests(cardSetId);
+        List<AccessRequestRecord> pendingRequests = accessRequestService.getPendingRequests(cardSetId);
         return ResponseEntity.ok(pendingRequests);
     }
 
