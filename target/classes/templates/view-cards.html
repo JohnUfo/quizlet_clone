@@ -69,6 +69,40 @@
             margin-bottom: 15px;
         }
 
+        .card-set-info {
+            margin-bottom: 20px;
+        }
+
+        .card-set-info h3 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .card-set-info p {
+            margin: 5px 0;
+            font-size: 16px;
+            opacity: 0.8;
+        }
+
+        .edit-card-set-btn {
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-size: 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(106, 17, 203, 0.4);
+        }
+
+        .edit-card-set-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(106, 17, 203, 0.6);
+        }
+
         .card-list {
             display: flex;
             flex-direction: column;
@@ -93,18 +127,180 @@
             font-size: 14px;
             opacity: 0.8;
         }
+
+        .add-card-btn {
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(106, 17, 203, 0.4);
+            margin-bottom: 20px;
+        }
+
+        .add-card-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(106, 17, 203, 0.6);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            color: black;
+            padding: 30px;
+            border-radius: 12px;
+            width: 400px;
+            text-align: left;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal h3 {
+            margin-top: 0;
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .modal input, .modal select, .modal textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .modal button {
+            width: 100%;
+            margin-top: 10px;
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            color: white;
+        }
+
+        .modal button.cancel {
+            background: linear-gradient(135deg, #ff4b5c, #ff6b81);
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.3s;
+            border-radius: 24px;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        input:checked + .slider {
+            background-color: #6a11cb;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+            background-color: white;
+        }
     </style>
 </head>
 <body>
-
 <div class="header">
-    <button class="back-btn" onclick="window.location.href='/cards?cardSetId=${cardSetId}'">← Back to Cards</button>
+    <button class="back-btn" onclick="window.location.href='/dashboard'">← Back to Dashboard</button>
 </div>
 
 <div class="container">
+    <div class="card-set-info">
+        <h3 id="cardSetName">Loading...</h3>
+        <p id="cardSetLanguages">Loading...</p>
+        <button class="edit-card-set-btn" onclick="openEditCardSetModal()">✏️ Edit Card Set</button>
+    </div>
     <h2>All Cards</h2>
-    <div class="card-list" id="cardList">
-        <!-- Cards will be dynamically inserted here -->
+    <button class="add-card-btn" onclick="openAddCardModal()">➕ Add Card</button>
+    <div class="card-list" id="cardList"></div>
+</div>
+
+<div id="editCardSetModal" class="modal">
+    <div class="modal-content">
+        <h3>Edit Card Set</h3>
+        <input type="text" id="editCardSetName" placeholder="Card Set Name">
+        <select id="editFirstLanguage"></select>
+        <select id="editSecondLanguage"></select>
+        <div class="toggle-container">
+            <span>Public:</span>
+            <label class="toggle-switch">
+                <input type="checkbox" id="editIsPublic">
+                <span class="slider"></span>
+            </label>
+        </div>
+        <button onclick="updateCardSet()">Save Changes</button>
+        <button class="cancel" onclick="closeEditCardSetModal()">Cancel</button>
+    </div>
+</div>
+
+<div id="addCardModal" class="modal">
+    <div class="modal-content">
+        <h3>Add New Card</h3>
+        <input type="text" id="termInput" placeholder="Enter term in First Language">
+        <input type="text" id="definitionInput" placeholder="Enter definition in Second Language">
+        <button onclick="addCard()">Add Card</button>
+        <button class="cancel" onclick="closeAddCardModal()">Cancel</button>
     </div>
 </div>
 
@@ -118,15 +314,41 @@
 
     const urlParams = new URLSearchParams(window.location.search);
     const cardSetId = urlParams.get("cardSetId");
+    console.log(cardSetId);
 
     if (!cardSetId) {
         alert("Invalid Card Set ID!");
         window.location.href = "dashboard";
     }
 
+    let cardSetDetails = null;
+
+    function populateLanguageDropdowns() {
+        const languages = [
+            "English", "Spanish", "French", "German", "Russian", "Chinese", "Arabic", "Italian",
+            "Portuguese", "Japanese", "Korean", "Hindi", "Turkish", "Dutch", "Swedish",
+            "Polish", "Greek", "Romanian", "Indonesian", "Vietnamese", "Thai", "Bengali",
+            "Persian", "Urdu", "Hebrew", "Uzbek"
+        ];
+
+        const firstLangSelect = document.getElementById('editFirstLanguage');
+        const secondLangSelect = document.getElementById('editSecondLanguage');
+
+        firstLangSelect.innerHTML = '';
+        secondLangSelect.innerHTML = '';
+
+        languages.forEach(lang => {
+            const option = document.createElement('option');
+            option.value = lang;
+            option.textContent = lang;
+            firstLangSelect.appendChild(option.cloneNode(true));
+            secondLangSelect.appendChild(option.cloneNode(true));
+        });
+    }
+
     async function fetchCards() {
         try {
-            const response = await fetch(`/cards/allCards/${cardSetId}`, {
+            const cardSetResponse = await fetch(`/cardsets/${cardSetId}`, {
                 method: "GET",
                 headers: {
                     "Authorization": `Bearer ${token}`,
@@ -134,11 +356,28 @@
                 }
             });
 
-            if (!response.ok) {
-                throw new Error(`Failed to fetch cards: ${response.status}`);
+            if (!cardSetResponse.ok) {
+                throw new Error("Failed to fetch card set details");
             }
 
-            const cards = await response.json();
+            cardSetDetails = await cardSetResponse.json();
+
+            document.getElementById("cardSetName").textContent = cardSetDetails.name;
+            document.getElementById("cardSetLanguages").textContent = `First Language: ${cardSetDetails.firstLanguage}, Second Language: ${cardSetDetails.secondLanguage}`;
+
+            const cardsResponse = await fetch(`/cards/allCards/${cardSetId}`, {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                }
+            });
+
+            if (!cardsResponse.ok) {
+                throw new Error(`Failed to fetch cards: ${cardsResponse.status}`);
+            }
+
+            const cards = await cardsResponse.json();
             const cardList = document.getElementById("cardList");
             cardList.innerHTML = cards.map(card => `
                 <div class="card-item">
@@ -152,6 +391,122 @@
         }
     }
 
+    function openEditCardSetModal() {
+        if (cardSetDetails) {
+            document.getElementById("editCardSetName").value = cardSetDetails.name;
+            document.getElementById("editFirstLanguage").value = cardSetDetails.firstLanguage;
+            document.getElementById("editSecondLanguage").value = cardSetDetails.secondLanguage;
+            document.getElementById("editIsPublic").checked = cardSetDetails.isPublic || false;
+            document.getElementById("editCardSetModal").style.display = "flex";
+        }
+    }
+
+    function closeEditCardSetModal() {
+        document.getElementById("editCardSetModal").style.display = "none";
+    }
+
+    async function updateCardSet() {
+        const name = document.getElementById("editCardSetName").value.trim();
+        const firstLanguage = document.getElementById("editFirstLanguage").value.trim();
+        const secondLanguage = document.getElementById("editSecondLanguage").value.trim();
+        const isPublic = document.getElementById("editIsPublic").checked;
+
+        if (!name || !firstLanguage || !secondLanguage) {
+            alert("All fields are required!");
+            return;
+        }
+
+        const updatedCardSet = {
+            name: name,
+            firstLanguage: firstLanguage,
+            secondLanguage: secondLanguage,
+            isPublic: isPublic
+        };
+
+        try {
+            const response = await fetch(`/cardsets/${cardSetId}`, {
+                method: "PUT",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(updatedCardSet)
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to update card set");
+            }
+
+            const updatedDetails = await response.json();
+            cardSetDetails = updatedDetails;
+            document.getElementById("cardSetName").textContent = updatedDetails.name;
+            document.getElementById("cardSetLanguages").textContent = `First Language: ${updatedDetails.firstLanguage}, Second Language: ${updatedDetails.secondLanguage}`;
+            closeEditCardSetModal();
+        } catch (error) {
+            console.error("Error updating card set:", error);
+            alert("Failed to update card set. Please try again.");
+        }
+    }
+
+    function openAddCardModal() {
+        if (cardSetDetails) {
+            document.getElementById("termInput").placeholder = `Enter term in ${cardSetDetails.firstLanguage}`;
+            document.getElementById("definitionInput").placeholder = `Enter definition in ${cardSetDetails.secondLanguage}`;
+            document.getElementById("addCardModal").style.display = "flex";
+        }
+    }
+
+    function closeAddCardModal() {
+        document.getElementById("addCardModal").style.display = "none";
+        clearInputFields();
+    }
+
+    function clearInputFields() {
+        document.getElementById("termInput").value = "";
+        document.getElementById("definitionInput").value = "";
+    }
+
+    async function addCard() {
+        const term = document.getElementById("termInput").value.trim();
+        const definition = document.getElementById("definitionInput").value.trim();
+
+        if (!term || !definition) {
+            alert("Both term and definition are required!");
+            return;
+        }
+
+        const newCard = {
+            term: term,
+            definition: definition,
+            cardSetId: cardSetId
+        };
+
+        try {
+            const response = await fetch(`/cards/${cardSetId}`, {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(newCard)
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to add card");
+            }
+
+            const addedCard = await response.json();
+            closeAddCardModal();
+            clearInputFields();
+            fetchCards();
+        } catch (error) {
+            console.error("Error adding card:", error);
+            alert("Failed to add card. Please try again.");
+        }
+    }
+
+    // Initialize
+    populateLanguageDropdowns();
     fetchCards();
 </script>
 </body>

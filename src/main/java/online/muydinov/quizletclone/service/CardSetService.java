@@ -55,7 +55,7 @@ public class CardSetService {
         cardSet.setFirstLanguage(cardSetRecord.firstLanguage());
         cardSet.setSecondLanguage(cardSetRecord.secondLanguage());
 
-        return convertCardSetToRecord(cardSetRepository.save(cardSet));
+        return convertCardSetToRecord(cardSetRepository.save(cardSet), null);
     }
 
     public void deleteCardSet(Long id) {
@@ -71,7 +71,7 @@ public class CardSetService {
         cardSet.setFirstLanguage(cardSetRecord.firstLanguage());
         cardSet.setSecondLanguage(cardSetRecord.secondLanguage());
 
-        return convertCardSetToRecord(cardSetRepository.save(cardSet));
+        return convertCardSetToRecord(cardSetRepository.save(cardSet),cardSetRecord.accessType());
     }
 
     public CardSet findCardSetByIdAndVerifyOwner(Long id) {
@@ -79,7 +79,7 @@ public class CardSetService {
                 .orElseThrow(() -> new UnauthorizedAccessException("Access denied or Card Set not found"));
     }
 
-    private CardSetRecord convertCardSetToRecord(CardSet cardSet) {
+    private CardSetRecord convertCardSetToRecord(CardSet cardSet,String accessType) {
         return new CardSetRecord(
                 cardSet.getId(),
                 cardSet.getName(),
@@ -88,7 +88,7 @@ public class CardSetService {
                 cardSet.getSecondLanguage(),
                 cardSet.getCreator().getId(),
                 null,
-                null
+                accessType
         );
     }
 }

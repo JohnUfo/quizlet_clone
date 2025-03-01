@@ -310,6 +310,32 @@
             transform: translateX(26px);
             background-color: white;
         }
+
+
+        .notification-actions button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .notification-actions button.accept {
+            background: linear-gradient(135deg, #28a745, #218838);
+            color: white;
+        }
+
+        .notification-actions button.reject {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+        }
+
+        .notification-actions button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
     </style>
 </head>
 <body>

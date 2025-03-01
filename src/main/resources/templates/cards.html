@@ -307,10 +307,9 @@
     <div class="dropdown">
         <button class="add-card-btn">⚙️ Options</button>
         <div class="dropdown-content">
-            <button onclick="openEditModal()">✏️ Edit</button>
-            <button onclick="window.location.href='/view-cards?cardSetId=${cardSetId}'">📄 View All Cards</button>
-            <button class="delete" onclick="deleteCardSet()">🗑️ Delete Card Set</button>
-        </div>
+        <button onclick="navigateToViewCards()">✏️ Edit</button>
+        <button class="delete" onclick="deleteCardSet()">🗑️ Delete Card Set</button>
+    </div>
     </div>
 </div>
 
@@ -354,6 +353,16 @@
 </div>
 
 <script>
+
+    function navigateToViewCards() {
+        const cardSetId = new URLSearchParams(window.location.search).get("cardSetId");
+        if (cardSetId) {
+            window.location.href = `/view-cards?cardSetId=${cardSetId}`;
+        } else {
+            alert("Invalid Card Set ID!");
+        }
+    }
+
     const token = localStorage.getItem("jwt");
 
     if (!token) {

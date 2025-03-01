@@ -34,7 +34,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(request -> request
                         .requestMatchers("/login", "/register").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
-                        .requestMatchers("/", "index.html", "register.html", "login.html", "dashboard.html", "dashboard", "cards").permitAll()
+                        .requestMatchers("/", "index.html", "register.html", "login.html", "dashboard.html", "dashboard", "cards","view-cards").permitAll()
                         .requestMatchers(HttpMethod.POST, "/cardsets/**").authenticated()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
