@@ -1,0 +1,41 @@
+-------------------------------------------------------------------------------
+Test set: online.muydinov.quizletclone.AuthenticationControllerTest
+-------------------------------------------------------------------------------
+Tests run: 6, Failures: 2, Errors: 1, Skipped: 0, Time elapsed: 1.361 s <<< FAILURE! -- in online.muydinov.quizletclone.AuthenticationControllerTest
+online.muydinov.quizletclone.AuthenticationControllerTest.testRegisterUser_Conflict -- Time elapsed: 0.060 s <<< FAILURE!
+org.mockito.exceptions.verification.NeverWantedButInvoked: 
+
+registerService.register(<any>);
+Never wanted here:
+-> at online.muydinov.quizletclone.service.RegisterService.register(RegisterService.java:23)
+But invoked here:
+-> at online.muydinov.quizletclone.controller.RegisterController.register(RegisterController.java:36) with arguments: [RegisterRequestRecord[fullName=existingUser, username=password, password=Existing User]]
+
+	at online.muydinov.quizletclone.service.RegisterService.register(RegisterService.java:23)
+	at online.muydinov.quizletclone.AuthenticationControllerTest.testRegisterUser_Conflict(AuthenticationControllerTest.java:61)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+
+online.muydinov.quizletclone.AuthenticationControllerTest.testLogin_ServiceException -- Time elapsed: 0.008 s <<< ERROR!
+java.lang.RuntimeException: Internal Error
+	at online.muydinov.quizletclone.service.LoginService.verify(LoginService.java:22)
+	at online.muydinov.quizletclone.controller.LoginController.login(LoginController.java:28)
+	at online.muydinov.quizletclone.AuthenticationControllerTest.testLogin_ServiceException(AuthenticationControllerTest.java:102)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+
+online.muydinov.quizletclone.AuthenticationControllerTest.testRegisterUser_InvalidInput -- Time elapsed: 0.013 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: expected: <400 BAD_REQUEST> but was: <201 CREATED>
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+	at org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:177)
+	at org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1145)
+	at online.muydinov.quizletclone.AuthenticationControllerTest.testRegisterUser_InvalidInput(AuthenticationControllerTest.java:71)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+
