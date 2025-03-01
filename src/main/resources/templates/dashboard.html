@@ -544,18 +544,6 @@
         document.getElementById('cardSetModal').style.display = 'none';
     }
 
-    function openUpdateModal(cardSetId) {
-        currentCardSetId = cardSetId;
-        const cardSet = cardSets.find(set => set.id === cardSetId);
-        if (cardSet) {
-            document.getElementById('updateSetName').value = cardSet.name;
-            document.getElementById('updateFirstLanguage').value = cardSet.firstLanguage;
-            document.getElementById('updateSecondLanguage').value = cardSet.secondLanguage;
-            document.getElementById('updateIsPublic').checked = cardSet.isPublic;
-            document.getElementById('updateCardSetModal').style.display = 'flex';
-        }
-    }
-
     function closeUpdateModal() {
         document.getElementById('updateCardSetModal').style.display = 'none';
     }
@@ -597,29 +585,6 @@
         } catch (error) {
             console.error(error);
             alert("Error updating card set");
-        }
-    }
-
-    async function deleteCardSet(cardSetId) {
-        const token = localStorage.getItem('jwt');
-        if (!token) {
-            alert("You are not logged in!");
-            return;
-        }
-        try {
-            const response = await fetch(`/cardsets/${cardSetId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': 'Bearer ' + token
-                }
-            });
-            if (!response.ok) {
-                throw new Error("Failed to delete card set");
-            }
-            renderLibraryCardSets();
-        } catch (error) {
-            console.error(error);
-            alert("Error deleting card set");
         }
     }
 
@@ -737,10 +702,6 @@
             <div class="cardset" onclick="openCardSet('${set.id}')">
                 <h3>${set.name}</h3>
                 <div class="access-type">${set.accessType}</div>
-                <div class="card-actions">
-                    <button class="btn update-btn" onclick="event.stopPropagation(); openUpdateModal('${set.id}')">✏️ Update</button>
-                    <button class="btn delete-btn" onclick="event.stopPropagation(); deleteCardSet('${set.id}')">🗑️ Delete</button>
-                </div>
             </div>
         `).join('');
     }
