@@ -1,34 +1,40 @@
 # Quizlet Clone
 
 ## 📌 Project Overview
-Quizlet Clone is a web-based platform designed to help users create, share, and study flashcards efficiently. It allows users to create **card sets**, request access to shared sets, and manage their study materials securely. This project follows modern backend development practices using **Spring Boot**, **JWT authentication**, and **PostgreSQL** as the database.
+Quizlet Clone is a full-stack web application inspired by Quizlet, designed to help users create, manage, and study flashcards. It allows users to create **card sets**, request access to shared sets, and manage their study materials securely. This project follows modern backend development practices using **Spring Boot**, **JWT authentication**, and **PostgreSQL** as the database.
 
 ---
 
 ## ✨ Features
-- **User Authentication** (Login/Register using JWT)
-- **Create & Manage Flashcard Sets**
-- **Request Access to Private Sets**
-- **Role-based Authorization**
-- **Secure API with Spring Security**
-- **Swagger Documentation**
-- **Database Persistence with PostgreSQL**
+- **User Authentication**: Secure login and registration using JWT (JSON Web Tokens).
+- **Card Sets**: Create, update, and delete card sets with customizable languages and privacy settings.
+- **Flashcards**: Add, edit, and study flashcards within a card set.
+- **Access Control**: Request access to private card sets and manage pending requests.
+- **Responsive UI**: Clean and intuitive user interface with interactive card flipping.
+- **Swagger API Documentation**: Integrated OpenAPI documentation for backend APIs.
 
 ---
 
 ## 🛠️ Tech Stack
 ### **Backend**
-- **Spring Boot 3** - Java-based backend framework
-- **Spring Security** - Authentication & authorization
-- **JWT (JSON Web Token)** - Secure token-based authentication
-- **PostgreSQL** - Relational database for storing data
-- **Hibernate** - ORM for database management
-- **SpringDoc OpenAPI** - API documentation
+- **Spring Boot 3**: Core framework for building the RESTful API.
+- **Spring Security**: Handles authentication and authorization.
+- **JWT (JSON Web Token)**: Secure token-based authentication.
+- **PostgreSQL**: Relational database for storing application data.
+- **Hibernate**: ORM for database management.
+- **SpringDoc OpenAPI**: Generates API documentation.
+
+### **Frontend**
+- **HTML/CSS**: For structuring and styling the application.
+- **JavaScript**: For dynamic interactions and API calls.
+- **Thymeleaf**: Server-side templating engine for rendering views.
 
 ### **Tools & Dependencies**
-- **Maven** - Dependency management
-- **Lombok** - Reduces boilerplate code
-- **BCrypt** - Password encryption
+- **Maven**: Build and dependency management.
+- **Lombok**: Reduces boilerplate code.
+- **BCrypt**: Password encryption.
+- **Docker**: Containerization for easy deployment.
+- **Postman**: API testing and debugging.
 
 ---
 
@@ -42,8 +48,8 @@ Make sure you have the following installed on your system:
 
 ### **Step 1: Clone the Repository**
 ```bash
-  git clone https://github.com/JohnUfo/quizlet-clone.git
-  cd quizlet-clone
+git clone https://github.com/JohnUfo/quizlet-clone.git
+cd quizlet-clone
 ```
 
 ### **Step 2: Configure Database**
@@ -64,7 +70,7 @@ The server should start at **http://localhost:8080**.
 
 ---
 
-## 📖 API Documentation (Swagger UI)
+## 📚 API Documentation (Swagger UI)
 After running the project, access API documentation at:
 [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
 
@@ -99,7 +105,7 @@ curl -H "Authorization: Bearer YOUR_TOKEN" http://localhost:8080/protected-endpo
 
 ---
 
-## 🏗️ Project Structure
+## 🏰️ Project Structure
 ```
 quizlet-clone/
 │── src/
@@ -110,6 +116,8 @@ quizlet-clone/
 │   │   ├── repository/      # Database repositories
 │   │   ├── service/         # Business logic services
 │── resources/
+│   ├── static/              # Static assets (CSS, JS, images)
+│   ├── templates/           # Thymeleaf templates (HTML)
 │   ├── application.properties # Configuration file
 │── pom.xml                   # Maven dependencies
 │── README.md                 # Project documentation
@@ -117,11 +125,18 @@ quizlet-clone/
 
 ---
 
-## 🤝 Contributing
-Contributions are welcome! Feel free to fork the repository and submit pull requests.
+## 🐓 Docker Deployment
+1. **Build and run the application using Docker**:
+   ```bash
+   docker-compose up --build
+   ```
+
+2. **Access the application**:
+   - Open your browser and navigate to `http://localhost:8080`.
 
 ---
 
-## 📝 Author
-Developed by **Umidjontursunov** 🚀
+## 🙏 Acknowledgments
+- Inspired by **Quizlet**.
+- Built with **Spring Boot** and **PostgreSQL**.
 
