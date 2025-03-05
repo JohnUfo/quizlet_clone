@@ -135,8 +135,3 @@ quizlet-clone/
    - Open your browser and navigate to `http://localhost:8080`.
 
 ---
-
-## 🙏 Acknowledgments
-- Inspired by **Quizlet**.
-- Built with **Spring Boot** and **PostgreSQL**.
-
